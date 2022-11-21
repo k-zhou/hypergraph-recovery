@@ -92,20 +92,17 @@ def test_subset_manipulation():
         _set.discard( _l_set[random.randint( 0, len( _l_set) -1 )] )
     print( _set)
 
-def run_algorithm( graph = None, max_iterations = None):
+def run_algorithm( max_iterations = None):
 
-    if graph == None:
-        return find_best_hypergraph( G_orig, max_iterations)
-    else:
-        assert type(graph) == graph_tool.Graph, "bummer."
-        return find_best_hypergraph( graph, max_iterations)
+    reconstructor.find_best_hypergraph( max_iterations)
 
 ### Main ##########
 print("--Tests script--")
 FILENAME = "../windsurfers.gt"
-G_orig   = init( FILENAME )
-if (G_orig == None): raise Exception("Cannot continue with null as the graph G_orig.")
+#G_orig   = init( FILENAME )
+#if (G_orig == None): raise Exception("Cannot continue with null as the graph G_orig.")
+reconstructor = Hypergraph_Reconstructor( FILENAME)
 print("Loaded file", FILENAME, "\nrun tests")
-hypergraph   = init_hypergraph(G_orig)
-graph_order  = len(list(G_orig.vertex_index))
-results      = None
+#hypergraph   = init_hypergraph(G_orig)
+#graph_order  = len(list(G_orig.vertex_index))
+#results      = None
