@@ -81,7 +81,7 @@ def get_Prob_G_if_H( adj_G_projected, adj_G_orig):
         return 0
 
 # hypergraph prior -- equation (12)
-# returns a real number
+# returns a tuple [real number, list E_k, list Z_k ], k from 0 until maximal hyperedge size
 def get_Prob_H( hypergraph, graph_order ):
 
     _E_total = len(get_adjacency_from_hypergraph(hypergraph))
@@ -109,19 +109,18 @@ def get_Prob_H( hypergraph, graph_order ):
     # turn into quickly accessible array
     _E = [ _Ed.get( i,0) for i in range(0, _L+1)]   # again, note the indexing that includes 2 dummy entries [0] and [1]
     _Z = [ _Zd.get( i,1) for i in range(0, _L+1)]
-    print(f"E:{ _E}\nZ:{ _Z}")
     # -----------------------
 
     # and calculate product
-    mu = _E_total / ( _L - 1)
-    #print("-- mu: %d = %d / ( %d - 1) -----\n" % ( mu, _E_total, _L ) )
+    _mu = _E_total / ( _L - 1)
+    #print("-- _mu: %d = %d / ( %d - 1) -----\n" % ( _mu, _E_total, _L ) )
     for k in range(2, _L + 1):
-        P_H_k  = ( factorial( _E[k])/( _Z[k] * mu * pow(comb( _N, k), _E[k]) ) ) * pow( 1/mu + 1, - _E[k]-1)
+        P_H_k  = ( factorial( _E[k])/( _Z[k] * _mu * pow(comb( _N, k), _E[k]) ) ) * pow( 1/ _mu + 1, - _E[k]-1)
         _running_product *= P_H_k
         #print("E_%d: %d , %d ! = %d, Z_%3d: %4d , (%d choose %d): %d " % (k, _E[k], _E[k], factorial(_E[k]), k, _Z[k], _N, k, comb( _N, k)) )
         #print("----- k: %d P_H_k %f and the running product: %f -----\n" % (k, P_H_k, _running_product))
 
-    return _running_product # placeholder
+    return [ _running_product, _E, _Z ]
 
 ## plan: to find a clique within a given hyperedge you need to create a new smaller Graph and a mapping which takes the indices of the vertices of the original Graph and maps them to those of the smaller Graph. You also simultaneously need an inverse map
 ## this way you can use the Graph.max_cliques() method on the small graph
@@ -133,6 +132,9 @@ def get_Prob_H( hypergraph, graph_order ):
  #
  # float is the hyperprior of the hypergraph
 def find_candidate_hypergraph( hypergraph, graph_order, G_orig, adj_G_orig ):
+
+    _N  = graph_order
+    _mu = 1 # placeholder
 
     if len( hypergraph) == 0:
         print("WARNING: hypergraph size 0")
@@ -183,6 +185,7 @@ def find_candidate_hypergraph( hypergraph, graph_order, G_orig, adj_G_orig ):
         _sub_hyperedge = frozenset( _set)
 
     ## ... and change the frequency of _sub_hyperedge. If its count is 0, increase by 1, else increase or decrease by 1 with 50% prob each
+    print(f"sub { _sub_hyperedge} : { _new_hypergraph.get( _sub_hyperedge, 0)}", end = '')
     if _new_hypergraph.get( _sub_hyperedge, 0) < 1:
         _new_hypergraph[ _sub_hyperedge] = 1
     else:
@@ -194,11 +197,18 @@ def find_candidate_hypergraph( hypergraph, graph_order, G_orig, adj_G_orig ):
     if _new_hypergraph[ _sub_hyperedge] < 1:
         _new_hypergraph.pop( _sub_hyperedge)
 
+    print(f" -> { _new_hypergraph.get( _sub_hyperedge, 0)}")
+
     ## calculate the hyperpriors P(H) and compare
-    _P_H_current = get_Prob_H(      hypergraph, graph_order)
-    _P_H_new     = get_Prob_H( _new_hypergraph, graph_order)
+    _result1     = get_Prob_H(      hypergraph, graph_order)
+    _result2     = get_Prob_H( _new_hypergraph, graph_order)
+    _P_H_current = _result1[0]
+    _P_H_new     = _result2[0]
+    #print(f"Old E:{ _result1[1]} Z:{ _result1[2]}")
+    print(f"New E:{ _result2[1]} Z:{ _result2[2]}")
     _ratio       = 0
     _cointoss    = False
+
     ## check for tiny probabilities
     ##### TODO
     # FIGURE THIS OUT NEXT
@@ -213,7 +223,7 @@ def find_candidate_hypergraph( hypergraph, graph_order, G_orig, adj_G_orig ):
     _projects_to_graph = get_Prob_G_if_H( get_adjacency_from_hypergraph( _new_hypergraph), adj_G_orig)
 
     ## check acceptance. If heads, record the change, otherwise keep the previous hypergraph
-    print(f"projects: { _projects_to_graph}, coin toss:{ _cointoss}")
+    #print(f"projects: { _projects_to_graph}, coin toss:{ _cointoss}")
     if _projects_to_graph and _cointoss:
         return (True, _new_hypergraph, _P_H_new)
     else:
@@ -228,7 +238,8 @@ def find_best_hypergraph( G_orig, max_iterations = None):
     _graph_order        = len(list(G_orig.vertex_index))
     _hypergraph         = init_hypergraph( G_orig)
     _best_hypergraph    = _hypergraph
-    _best_hyperprior    = get_Prob_H( _hypergraph, _graph_order)
+    _result             = get_Prob_H( _hypergraph, _graph_order)
+    _best_hyperprior    = _result[0]
     _MAX_ITERATONS      = 0
     if not max_iterations == None:
         assert type(max_iterations) == int and max_iterations > 0, "find_best_hypergraph() error"
@@ -242,7 +253,7 @@ def find_best_hypergraph( G_orig, max_iterations = None):
     i = 0
     while i < _MAX_ITERATONS:
         print(f"Iteration {i}")
-        out = find_candidate_hypergraph( _hypergraph, _graph_order, G_orig, _adj_G_orig)
+        out = find_candidate_hypergraph( _best_hypergraph, _graph_order, G_orig, _adj_G_orig)
         if out[0]:
             _best_hypergraph = out[1]
             _best_hyperprior = out[2]
