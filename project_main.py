@@ -15,24 +15,11 @@ from project_methods import *
 FILENAME = "../windsurfers.gt"
 G_orig   = init( FILENAME )
 if (G_orig == None): raise Exception("Cannot continue with null as the graph G_orig.")
-h_graph  = init_hypergraph(G_orig)
-# run though h_graph candidates
-
-### evidence, normalization
-# add each iteration of P_G_H * P_H to this array, and then sum them up at the end
-P_G_arr = []
-placeholder_list = [ h_graph ]
-
-N = len(list(G_orig.vertices())) # confirm this?
-#
-for i in placeholder_list:
-    L     = min(10, N) # placeholder, max size of hyperedge, min 2
-
-    P_G_H = get_Prob_G_if_H()
-    P_H   = get_Prob_H( i, L, N)
-    top   = P_G_H * P_H
-
-    P_G_arr.append(top)
+print("Loaded file", FILENAME, "\nrunning algorithm...")
+try:
+    result = find_best_hypergraph( G_orig)
+except:
+    print("Error.")
 
 # Visualisation
 
