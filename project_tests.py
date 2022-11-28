@@ -91,6 +91,20 @@ def test_subset_manipulation():
     while len( _set) > _targetsize:
         _set.discard( _l_set[random.randint( 0, len( _l_set) -1 )] )
     print( _set)
+def test_generators1( max_iterations = None):
+
+    _MAX_ITERATONS   = 0
+    if not max_iterations == None:
+        assert type( max_iterations) == int
+        assert max_iterations > 0
+        _MAX_ITERATONS      = max_iterations
+    else:
+        _MAX_ITERATONS      = 10
+
+    running_product  = 1
+    for k in range(1, _MAX_ITERATONS):
+        running_product *= k
+        yield running_product
 
 def run_algorithm( max_iterations = None):
 
@@ -99,10 +113,9 @@ def run_algorithm( max_iterations = None):
 ### Main ##########
 print("--Tests script--")
 FILENAME = "../windsurfers.gt"
-#G_orig   = init( FILENAME )
-#if (G_orig == None): raise Exception("Cannot continue with null as the graph G_orig.")
 reconstructor = Hypergraph_Reconstructor( FILENAME)
-print("Loaded file", FILENAME, "\nrun tests")
+print(f"Loaded file {FILENAME} to object \"reconstructor\"\n...")
+#print("")
 #hypergraph   = init_hypergraph(G_orig)
 #graph_order  = len(list(G_orig.vertex_index))
 #results      = None

@@ -28,10 +28,18 @@ def factorial_div_factorial(top, bot):
     else:
         return 1/factorial_div_factorial(bot, top)
 
+# def print_list_magnitudes(list, end = None):
+#     if end != None:
+#         assert type( end) == str
+#     for element in list:
+#
+#         print(f"{element}, ", end = '')
+#     print("", end = end)
+
 ### Find best hypergraph ########################
 class Hypergraph_Reconstructor:
 
-    def __init__(self, filename):
+    def __init__(self, filename, print_period = None):
 
         self._filename = filename
         try:
@@ -44,23 +52,39 @@ class Hypergraph_Reconstructor:
         self._graph_order            = len(list(self._g.vertex_index))
         self._maximal_hyperedge_size = 2  # to be determined later while running the algorithm
         self._mu                     = 1  # equation (11), to be determined later
+        self._epsilon                = pow(10, -6) # cutoff point for miniscule prob calculations
 
-        self._best_hypergraph        = dict()
+        self._current_hypergraph     = dict()
+        self._best_hypergraph        = self._current_hypergraph
         self._best_hyperprior        = 1
         self._P_G_arr                = []
+        self._P_G                    = 1
 
-    # Returns datatype: dict of frozensets of uints (mappable to graph_tool.Vertices), maps to Z+
-    def init_hypergraph(self, graph):
+        self._print_period           = 5 # used to control printing to console only periodically
+        self._periodic_print         = self._print_period
+        self._iteration              = 0
 
-        _hypergraph = dict()
+    # Sets (or resets) the current hypergraph using some initialisation method on the original graph
+    # Returns void
+    def init_hypergraph(self):
+
+        self._iteration          = 0
+        self._current_hypergraph = dict() # datatype: dict of frozensets of uints (mappable to graph_tool.Vertices), maps to Z+
         ### Current methodology: Adds all maximal cliques as hyperedges to the hypergraph.
-        _m_cliques = max_cliques( graph ) # returns: iterator over iterator over numpy.ndarray
+        _m_cliques      = max_cliques( self._g ) # returns: iterator over numpy.ndarray
         for clique in _m_cliques:
             fs = frozenset( clique )
-            _hypergraph[ fs ] = 1 # + _h_graph.get(fs, 0)
+            self._current_hypergraph[ fs ] = 1 # + _h_graph.get(fs, 0)
+
+            # simultaneously find out maximal hyperedge size _L
+            _edge_size = len(clique)
+            if _edge_size > self._maximal_hyperedge_size:
+                self._maximal_hyperedge_size = _edge_size
+
         ### Alternative methods include random init, edge init, or empty (page 6, last paragraph before section [D] )
         #
-        return _hypergraph
+
+        return
 
     ## projection component -- equation (2)
 
@@ -108,14 +132,13 @@ class Hypergraph_Reconstructor:
         else:
             return 0
 
-    # hypergraph prior -- equation (12)
-    # returns a tuple [real number, list E_k, list Z_k ], k from 0 until maximal hyperedge size
+    ## hypergraph prior -- equation (12)
+    ## returns a tuple [generator of a real number, list E_k, list Z_k ], k from 0 until maximal hyperedge size
     def get_Prob_H(self, hypergraph):
 
         _E_total = self._graph_edges_total
         _L       = self._maximal_hyperedge_size
         _N       = self._graph_order
-        _running_product = 1
 
         # subrountine here ------
         # -- equation (5)
@@ -131,9 +154,6 @@ class Hypergraph_Reconstructor:
             _Ed[ _edge_size] = _Ed.get( _edge_size, 0) + hypergraph[ hyperedge]
             # (7)
             _Zd[ _edge_size] = _Zd.get( _edge_size, 1) * factorial( hypergraph[ hyperedge])
-            # simultaneously find out maximal hyperedge size _L
-            if _edge_size > _L:
-                _L = _edge_size
         # turn into quickly accessible array
         _E = [ _Ed.get( i,0) for i in range(0, _L+1)]   # again, note the indexing that includes 2 dummy entries [0] and [1]
         _Z = [ _Zd.get( i,1) for i in range(0, _L+1)]
@@ -144,13 +164,48 @@ class Hypergraph_Reconstructor:
             self._mu = new_mu
         # and calculate product
         #print("-- _mu: %d = %d / ( %d - 1) -----\n" % ( _mu, _E_total, _L ) )
-        for k in range(2, _L + 1):
-            P_H_k  = ( factorial( _E[k])/( _Z[k] * self._mu * pow(comb( _N, k), _E[k]) ) ) * pow( 1/ self._mu + 1, - _E[k]-1)
-            _running_product *= P_H_k
-            #print("E_%d: %d , %d ! = %d, Z_%3d: %4d , (%d choose %d): %d " % (k, _E[k], _E[k], factorial(_E[k]), k, _Z[k], _N, k, comb( _N, k)) )
-            #print("----- k: %d P_H_k %f and the running product: %f -----\n" % (k, P_H_k, _running_product))
 
-        return [ _running_product, _E, _Z ]
+        ## helper
+        ## this returns values increasingly miniscule with increasing graph order, so calculating it is fairly pointless
+        def get_equation_12():
+
+            _running_product = 1
+            ### realisation:
+            ### you don't really need absolute probabilities, and in this situation it is untenable to calculate those miniscule probabilities. You can, instead, calculate their relative probabilities during MCMC
+            def get_diminishing_product(k):
+                # factorial( _E[k]) / pow(comb( _N, k), _E[k])
+                bottom_  = comb( _N, k)
+                E_i_     = _E[k]
+                product_ = 1
+                while E_i_ > 0:
+                    product_ *= E_i_ / bottom_
+                    if product_ < self._epsilon:
+                        return [False, 0]
+                    E_i_ -= 1
+                return [ True, product_ ]
+
+            for k in range(2, _L + 1):
+                P_H_k  = 1
+                term1  = get_diminishing_product(k)
+                if term1[0]:
+                    term2  = pow( 1/ self._mu + 1, - _E[k]-1) / ( _Z[k] * self._mu)
+                    P_H_k  = term1[1] * term2
+                else:
+                    P_H_k  = self._epsilon
+                _running_product *= P_H_k
+                #print("E_%d: %d , %d ! = %d, Z_%3d: %4d , (%d choose %d): %d " % (k, _E[k], _E[k], factorial(_E[k]), k, _Z[k], _N, k, comb( _N, k)) )
+                #print("----- k: %d P_H_k %f and the running product: %f -----\n" % (k, P_H_k, _running_product))
+
+            yield _running_product
+
+        return [ get_equation_12(), _E, _Z ]
+
+    ##
+    def calculate_Prob_G(self):
+        sum = 0
+        for ( hypergraph, hyperprior) in self._P_G_arr:
+            sum += hyperprior
+        self._P_G = sum
 
     ## plan: to find a clique within a given hyperedge you need to create a new smaller Graph and a mapping which takes the indices of the vertices of the original Graph and maps them to those of the smaller Graph. You also simultaneously need an inverse map
     ## this way you can use the Graph.max_cliques() method on the small graph
@@ -167,11 +222,10 @@ class Hypergraph_Reconstructor:
         _L  = self._maximal_hyperedge_size
 
         if len( hypergraph) == 0:
-            print("WARNING: hypergraph size 0")
-            return (False, hypergraph, self.get_Prob_H( hypergraph)[0] )
+            raise Exception("Error: hypergraph size 0... Have you initialized the hypergraph?")
+            #return (False, hypergraph, self.get_Prob_H( hypergraph)[0] )
 
         ## Find maximal hyperedge
-        _EPSILON        = 0.000001 # used for checking tiny probabilities of float types
         _new_hypergraph = hypergraph.copy()
         _largest        = frozenset({})
         _size_largest   = len( _largest)
@@ -205,7 +259,9 @@ class Hypergraph_Reconstructor:
                 k = len(mq)
 
         ## select a random sub-hyperedge within this hyperedge (can select itself) ...
-        l = random.randint( 1, k)
+        l = 1
+        if k > 1:
+            l = random.randint( 2, k)
         _sub_hyperedge = _largest
         if l < k:
             _set   =  set( _sub_hyperedge)
@@ -215,62 +271,62 @@ class Hypergraph_Reconstructor:
             _sub_hyperedge = frozenset( _set)
 
         ## ... and change the frequency of _sub_hyperedge. If its count is 0, increase by 1, else increase or decrease by 1 with 50% prob each
-        print(f"sub { _sub_hyperedge} : { _new_hypergraph.get( _sub_hyperedge, 0)}", end = '')
+        #print(f"sub { _sub_hyperedge} : { _new_hypergraph.get( _sub_hyperedge, 0)}", end = '')
         if _new_hypergraph.get( _sub_hyperedge, 0) < 1:
             _new_hypergraph[ _sub_hyperedge] = 1
         else:
-            if 0.5 < random.random():
+            if random.random() < 0.5:
                 _new_hypergraph[ _sub_hyperedge] += 1
             else:
                 _new_hypergraph[ _sub_hyperedge] -= 1
         # if it's now 0, clean up
         if _new_hypergraph[ _sub_hyperedge] < 1:
+            #print(f"new len {len( _new_hypergraph)} -> ", end = '')
             _new_hypergraph.pop( _sub_hyperedge)
+            #print(f"{len( _new_hypergraph)}")
 
-        print(f" -> { _new_hypergraph.get( _sub_hyperedge, 0)}")
+        #print(f" -> { _new_hypergraph.get( _sub_hyperedge, 0)}")
 
         ## calculate the hyperpriors P(H) and compare
         ( _P_H_current, _E_current, _Z_current) = self.get_Prob_H(      hypergraph)
         ( _P_H_new    , _E_new    , _Z_new    ) = self.get_Prob_H( _new_hypergraph)
-        print(f"New E:{ _E_new} Z:{ _Z_new}")
-        _ratio       = 0
-        _cointoss    = False
-
-        ## check for tiny probabilities
-        ##### TODO
-        # FIGURE THIS OUT NEXT
 
         acceptance_rate = 1
         for k in range(2, _L+1):
             term1 = factorial_div_factorial( _E_new[k], _E_current[k])
             term2 = _Z_current[k] / _Z_new[k]
             term3 = pow( (comb( _N, k) * (1/ self._mu) +1), _E_current[k] - _E_new[k])
-            acceptance_rate *= term1 * term2 * term3
-        print(f"acceptance rate { acceptance_rate} ", end = '')
+            prod  = term1 * term2 * term3
+            acceptance_rate *= prod
+            #print(f"{prod} ", end = '') # debug
 
-        if _P_H_current < _EPSILON:
-            _ratio     = 1
-            _cointoss  = True
-        else:
-            _ratio     = _P_H_new / _P_H_current
-            _cointoss  = _ratio < random.random()
+        _cointoss  = random.random() < acceptance_rate
 
         ## check whether P(G|H) = 1 holds
         _projects_to_graph = self.get_Prob_G_if_H( self.get_adjacency_from_hypergraph( _new_hypergraph))
 
         ## check acceptance. If heads, record the change, otherwise keep the previous hypergraph
-        #print(f"projects: { _projects_to_graph}, coin toss:{ _cointoss}")
         if _projects_to_graph and _cointoss:
+            if self._periodic_print == 0:
+                print(f"\n\nhyperedge { _sub_hyperedge} : { _new_hypergraph.get( _sub_hyperedge, 0)}  ", end = '')
+                print(f"acceptance rate { acceptance_rate}, ", end='') #<- coin toss:{ _cointoss}")
+                print(f"len { len( _new_hypergraph)}")
+                print(f"Old E:{ _E_current}") # Z:{[ '{:.1E}'.format(val) for val in _Z_current ]}")
+                print(f"New E:{ _E_new    }") # Z:{[ '{:.1E}'.format(val) for val in _Z_new     ]}")
+                print()
+                self._periodic_print = self._print_period
+            self._periodic_print -= 1
             return (True, _new_hypergraph, _P_H_new)
         else:
             return (False, hypergraph, _P_H_current)
 
-    ## main algorithm
-    # WIP
+
+    ##
+    ## main algorithm version 1, always resets progress, <- change to store currently best solution in object state
     ## returns void
     def find_best_hypergraph(self, max_iterations = None):
 
-        _hypergraph         = self.init_hypergraph( self._g)
+        #_hypergraph         = self.init_hypergraph( self._g)
         _best_hypergraph    = _hypergraph
         _result             = self.get_Prob_H( _hypergraph)
         _best_hyperprior    = _result[0]
@@ -284,16 +340,77 @@ class Hypergraph_Reconstructor:
         ### evidence, normalization
         # add each iteration of P_G_H * P_H to this array, and then sum them up at the end
         self._P_G_arr = [ ( _best_hypergraph, _best_hyperprior) ]
+        self._P_G     = 0
 
         i = 0
         while i < _MAX_ITERATONS:
-            print(f"Iteration {i}")
             out = self.find_candidate_hypergraph( _best_hypergraph)
             if out[0]:
-                self._best_hypergraph = out[1]
-                self._best_hyperprior = out[2]
+                print(f"Iteration {i}   ", end = '')
+                _best_hypergraph      = out[1]
+                gen                   = out[2]
+                for val in gen: pass
+                _best_hyperprior      = val
+                self._best_hypergraph = _best_hypergraph
+                self._best_hyperprior = val
                 self._P_G_arr.append( ( _best_hypergraph, _best_hyperprior))
-            i += 1
+                self._P_G            += val
+                i += 1
 
         return
+    ## main algorithm version 2
+    # change init_hypergraph(): set self._current_hypergraph to use initialisation algorithm on the original graph, returns void
+    # use this method to run the algorithm for a set amount of iterations
+    def run_algorithm(self, iterations = None):
+
+        _result          = self.get_Prob_H( self._current_hypergraph)
+        for val in _result[0]: pass
+        _best_hyperprior = val
+        _ITERATIONS      = 20
+        if not iterations == None:
+            assert type( iterations) == int and iterations > 0, "find_best_hypergraph() error: iterations input"
+            _ITERATIONS   = iterations
+
+        ### evidence, normalization
+        # add each iteration of P_G_H * P_H to this array, and then sum them up at the end
+        #self._P_G_arr = [ ( _best_hypergraph, _best_hyperprior) ]
+        #self._P_G     = 0
+
+        i = 0
+        while i < _ITERATIONS:
+            out = self.find_candidate_hypergraph( self._current_hypergraph)
+            if out[0]:
+                print(f"Iteration {self._iteration}   ", end = '')
+                _best_hypergraph      = out[1]
+                gen                   = out[2]
+                for val in gen: pass
+                _best_hyperprior         = val
+                self._current_hypergraph = _best_hypergraph
+                self._best_hypergraph    = self._current_hypergraph
+                self._best_hyperprior    = val
+                #self._P_G_arr.append( ( _best_hypergraph, _best_hyperprior))
+                self._P_G            += val
+                i               += 1
+                self._iteration += 1
+
+        return
+
+    ## Observation: as of this 28.11.2022 implementation, the algorithm tends to endlessly add 2-edges. This method cuts down on the number of repeated hyperedges to a given maximum number
+    ## returns a number (int) of all those pruned away
+
+    ## edit 1: or no, it doesn't now. What is going on? Now it's stabilizing around some values
+    #  edit 2: Think I've found an odd bug. After loading up the file into the object you'd normally need to use the method init_hypergraph() to set the initial state for the algorithm to run on. If you do this, the test graph windsurfers.gt will stabilize to some hypergraph of 800 2-edges. If you don't initialize and try to run the algorithm, it'll throw an error as per planned; but if you then initialize it and run the recovery algorithm, it will "stabilize" around 400 2-edges 430 3-edges. The 3-edges part is stable but the 2-edges part will endlessly rise in count.
+
+    def prune_hypergraph(self, threshold):
+
+        assert type( threshold)  == int and threshold >= 0
+
+        stats = 0
+        for hyperedge in self._current_hypergraph:
+            count = self._current_hypergraph[ hyperedge]
+            if count > threshold:
+                stats += count - threshold
+                self._current_hypergraph[ hyperedge] = threshold
+        print(f"{stats} hyperedges pruned")
+        return stats
     #
