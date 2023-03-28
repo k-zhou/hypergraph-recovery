@@ -12,7 +12,7 @@ from project_methods import *
 
 # run the algorithm
 
-FILENAME = "../windsurfers.gt"
+FILENAME = "../source_data/windsurfers.gt"
 G_orig   = init( FILENAME )
 if (G_orig == None): raise Exception("Cannot continue with null as the graph G_orig.")
 print("Loaded file", FILENAME, "\nrunning algorithm...")

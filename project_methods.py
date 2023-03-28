@@ -48,27 +48,27 @@ class Hypergraph_Reconstructor:
             raise Exception("ERROR while loading " + filename)
 
         self._adj_graph              = self.get_adjacency_from_Graph(self._g) # adjacency list as a dict( frozensets) -> Z+
-        self._graph_edges_total      = len(self._adj_graph) # the total number of edges in the graph
-        self._graph_order            = len(list(self._g.vertex_index))
+        self._graph_edges_total      = self._g.num_edges()
+        self._graph_order            = self._g.num_vertices()
         self._maximal_hyperedge_size = 2  # to be determined later while running the algorithm
         self._mu                     = 1  # equation (11), to be determined later
         self._epsilon                = pow(10, -6) # cutoff point for miniscule prob calculations
 
         self._current_hypergraph     = dict()
-        self._best_hypergraph        = self._current_hypergraph
+        #self._best_hypergraph        = self._current_hypergraph
         self._best_hyperprior        = 1
         self._P_G_arr                = []
         self._P_G                    = 1
 
         self._print_period           = 5 # used to control printing to console only periodically
         self._periodic_print         = self._print_period
-        self._iteration              = 0
+        self._iteration              = 1
 
     # Sets (or resets) the current hypergraph using some initialisation method on the original graph
     # Returns void
     def init_hypergraph(self):
 
-        self._iteration          = 0
+        self._iteration          = 1
         self._current_hypergraph = dict() # datatype: dict of frozensets of uints (mappable to graph_tool.Vertices), maps to Z+
         ### Current methodology: Adds all maximal cliques as hyperedges to the hypergraph.
         _m_cliques      = max_cliques( self._g ) # returns: iterator over numpy.ndarray
@@ -180,7 +180,7 @@ class Hypergraph_Reconstructor:
                 while E_i_ > 0:
                     product_ *= E_i_ / bottom_
                     if product_ < self._epsilon:
-                        return [False, 0]
+                        return [False, self._epsilon]
                     E_i_ -= 1
                 return [ True, product_ ]
 
@@ -308,7 +308,8 @@ class Hypergraph_Reconstructor:
         ## check acceptance. If heads, record the change, otherwise keep the previous hypergraph
         if _projects_to_graph and _cointoss:
             if self._periodic_print == 0:
-                print(f"\n\nhyperedge { _sub_hyperedge} : { _new_hypergraph.get( _sub_hyperedge, 0)}  ", end = '')
+                print(f"\nIteration {self._iteration}")
+                print(f"hyperedge { _sub_hyperedge} : { _new_hypergraph.get( _sub_hyperedge, 0)}  ", end = '')
                 print(f"acceptance rate { acceptance_rate}, ", end='') #<- coin toss:{ _cointoss}")
                 print(f"len { len( _new_hypergraph)}")
                 print(f"Old E:{ _E_current}") # Z:{[ '{:.1E}'.format(val) for val in _Z_current ]}")
@@ -320,55 +321,17 @@ class Hypergraph_Reconstructor:
         else:
             return (False, hypergraph, _P_H_current)
 
-
-    ##
-    ## main algorithm version 1, always resets progress, <- change to store currently best solution in object state
-    ## returns void
-    def find_best_hypergraph(self, max_iterations = None):
-
-        #_hypergraph         = self.init_hypergraph( self._g)
-        _best_hypergraph    = _hypergraph
-        _result             = self.get_Prob_H( _hypergraph)
-        _best_hyperprior    = _result[0]
-        _MAX_ITERATONS      = 0
-        if not max_iterations == None:
-            assert type(max_iterations) == int and max_iterations > 0, "find_best_hypergraph() error: max_iterations input"
-            _MAX_ITERATONS  = max_iterations
-        else:
-            _MAX_ITERATONS  = 50
-
-        ### evidence, normalization
-        # add each iteration of P_G_H * P_H to this array, and then sum them up at the end
-        self._P_G_arr = [ ( _best_hypergraph, _best_hyperprior) ]
-        self._P_G     = 0
-
-        i = 0
-        while i < _MAX_ITERATONS:
-            out = self.find_candidate_hypergraph( _best_hypergraph)
-            if out[0]:
-                print(f"Iteration {i}   ", end = '')
-                _best_hypergraph      = out[1]
-                gen                   = out[2]
-                for val in gen: pass
-                _best_hyperprior      = val
-                self._best_hypergraph = _best_hypergraph
-                self._best_hyperprior = val
-                self._P_G_arr.append( ( _best_hypergraph, _best_hyperprior))
-                self._P_G            += val
-                i += 1
-
-        return
     ## main algorithm version 2
-    # change init_hypergraph(): set self._current_hypergraph to use initialisation algorithm on the original graph, returns void
-    # use this method to run the algorithm for a set amount of iterations
+    ## use this method to run the algorithm for a set amount of iterations
+    ## needs init_hypergraph() to be run first
     def run_algorithm(self, iterations = None):
 
         _result          = self.get_Prob_H( self._current_hypergraph)
         for val in _result[0]: pass
         _best_hyperprior = val
-        _ITERATIONS      = 20
+        _ITERATIONS      = 100
         if not iterations == None:
-            assert type( iterations) == int and iterations > 0, "find_best_hypergraph() error: iterations input"
+            assert type( iterations) == int and iterations > 0, "run_algorithm() error: iterations input"
             _ITERATIONS   = iterations
 
         ### evidence, normalization
@@ -380,16 +343,15 @@ class Hypergraph_Reconstructor:
         while i < _ITERATIONS:
             out = self.find_candidate_hypergraph( self._current_hypergraph)
             if out[0]:
-                print(f"Iteration {self._iteration}   ", end = '')
-                _best_hypergraph      = out[1]
-                gen                   = out[2]
+                _current_hypergraph      = out[1]
+                gen                      = out[2]
                 for val in gen: pass
                 _best_hyperprior         = val
-                self._current_hypergraph = _best_hypergraph
-                self._best_hypergraph    = self._current_hypergraph
+                self._current_hypergraph = _current_hypergraph
+                #self._best_hypergraph    = self._current_hypergraph
                 self._best_hyperprior    = val
                 #self._P_G_arr.append( ( _best_hypergraph, _best_hyperprior))
-                self._P_G            += val
+                self._P_G               += val
                 i               += 1
                 self._iteration += 1
 
@@ -414,3 +376,26 @@ class Hypergraph_Reconstructor:
         print(f"{stats} hyperedges pruned")
         return stats
     #
+
+    ##### auxilliary methods #####
+
+    ## for use when the original graph loaded consists of unconnected subgraphs, this creates a new graph that finds the largest subgraph out of the original graph
+    ## returns a new Graph object
+    def get_largest_subgraph(self):
+        # this holds the order of the subgraph found when iterating a search started at a vertex i
+        orders_dict = dict()
+        for i in range(self._graph_order):
+            if orders_dict.get(i, 0) == 0:
+                # DFS traversal
+                order           = 1
+                traversed_nodes = [i]
+                to_be_traversed = [int(vertex) for vertex in self._g.vertex(i).out_neighbours()]
+                while len(to_be_traversed) > 0:
+                    node = to_be_traversed.pop()
+                    if not node in traversed_nodes:
+                        order += 1
+                        traversed_nodes.append(node)
+                        for vertex in self._g.vertex(node).out_neighbours(): to_be_traversed.append(int(vertex))
+                for node in traversed_nodes:
+                    orders_dict[node] = order
+        # TODO: turn this dict into a new graph object
