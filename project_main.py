@@ -9,7 +9,7 @@
 # math.factorial(x)
 
 # import string
-from project_methods import *
+from Hypergraph_Reconstructor import *
 from project_tests   import *
 import os
 from fnmatch         import fnmatch

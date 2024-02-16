@@ -1,5 +1,5 @@
 
-from project_methods import *
+from Hypergraph_Reconstructor import *
 
 # (!) Notice (!)
 # Many of these are using functions now moved under the H-Reconstructor class

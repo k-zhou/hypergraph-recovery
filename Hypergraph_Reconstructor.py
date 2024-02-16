@@ -5,7 +5,8 @@ from      itertools import combinations
 from           time import time_ns
 import       random
 import        numpy as     np
-import helper_functions
+
+from helper_functions import *
 
 # -> how to iterate through a python set?
 #   <- convert to list
