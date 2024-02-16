@@ -1,6 +1,8 @@
 
 from project_methods import *
-# import string
+
+# (!) Notice (!)
+# Many of these are using functions now moved under the H-Reconstructor class
 
 def test_types_1( hypergraph):
 
@@ -105,22 +107,3 @@ def test_generators1( max_iterations = None):
     for k in range(1, _MAX_ITERATONS):
         running_product *= k
         yield running_product
-
-# 
-def load_file():
-    global reconstructor
-    filename      = input("Enter the file / path to file: ")
-    reconstructor = Hypergraph_Reconstructor( filename)
-    print(f"Loaded file { filename} to object \"reconstructor\"\n...")
-
-def run_algorithm( max_iterations = None):
-
-    reconstructor.find_best_hypergraph( max_iterations)
-
-### Main ##########
-FILE_LOADED   = False
-print("--Tests script--")
-print(" run load_file() to start")
-#hypergraph   = init_hypergraph(G_orig)
-#graph_order  = len(list(G_orig.vertex_index))
-#results      = None

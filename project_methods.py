@@ -2,39 +2,15 @@
 from           math import comb, pow, factorial
 from graph_tool.all import *
 from      itertools import combinations
+from           time import time_ns
 import       random
 import        numpy as     np
+import helper_functions
 
 # -> how to iterate through a python set?
 #   <- convert to list
 # graph  size: number of edges
 # graph order: number of vertices
-
-# helper: calculate  a! / b!
-def factorial_div_factorial(top, bot):
-    assert type(top) == int
-    assert type(bot) == int
-    assert top >= 0
-    assert bot >= 0
-    if top > bot:
-        i   = top
-        ans = 1
-        while ( i > bot ):
-            ans *= i
-            i   -= 1
-        return ans
-    elif top == bot:
-        return 1
-    else:
-        return 1/factorial_div_factorial(bot, top)
-
-# def print_list_magnitudes(list, end = None):
-#     if end != None:
-#         assert type( end) == str
-#     for element in list:
-#
-#         print(f"{element}, ", end = '')
-#     print("", end = end)
 
 ### Find best hypergraph ########################
 class Hypergraph_Reconstructor:
@@ -46,6 +22,9 @@ class Hypergraph_Reconstructor:
             self._g = load_graph( self._filename) # graph_tool.Graph
         except:
             raise Exception("ERROR while loading " + filename)
+        self._filename_pathless      = strip_filename_path(self._filename)
+        self._file_path              = strip_filename_suffix(self._filename, '/') + '/'
+        self._filename_only          = strip_filename_suffix(self._filename_pathless)
 
         self._adj_graph              = self.get_adjacency_from_Graph(self._g) # adjacency list as a dict( frozensets) -> Z+
         self._graph_edges_total      = self._g.num_edges()
@@ -62,13 +41,22 @@ class Hypergraph_Reconstructor:
 
         self._print_period           = 5 # used to control printing to console only periodically
         self._periodic_print         = self._print_period
-        self._iteration              = 1
+        self._iteration              = 0
+        self._hypergraph_initiated   = 0
+        self._log                    = [] # a list of types convertible to string, later exportable to a log file
+
+        self._log.append(self._filename_pathless)
+
+    ##########################
+
+    def get_log(self):
+        return self._log
+
 
     # Sets (or resets) the current hypergraph using some initialisation method on the original graph
     # Returns void
     def init_hypergraph(self):
 
-        self._iteration          = 1
         self._current_hypergraph = dict() # datatype: dict of frozensets of uints (mappable to graph_tool.Vertices), maps to Z+
         ### Current methodology: Adds all maximal cliques as hyperedges to the hypergraph.
         _m_cliques      = max_cliques( self._g ) # returns: iterator over numpy.ndarray
@@ -83,6 +71,7 @@ class Hypergraph_Reconstructor:
 
         ### Alternative methods include random init, edge init, or empty (page 6, last paragraph before section [D] )
         #
+        self._hypergraph_initiated = 1
 
         return
 
@@ -305,16 +294,28 @@ class Hypergraph_Reconstructor:
         ## check whether P(G|H) = 1 holds
         _projects_to_graph = self.get_Prob_G_if_H( self.get_adjacency_from_hypergraph( _new_hypergraph))
 
+        def print_progress():
+            print(f"\nIteration {self._iteration}")
+            print(f"hyperedge { _sub_hyperedge} : { _new_hypergraph.get( _sub_hyperedge, 0)}  ", end = '')
+            print(f"acceptance rate { acceptance_rate}, ", end='') #<- coin toss:{ _cointoss}")
+            print(f"len { len( _new_hypergraph)}")
+            #print(f"Old E:{ _E_current}") # Z:{[ '{:.1E}'.format(val) for val in _Z_current ]}")
+            #print(f"New E:{ _E_new    }") # Z:{[ '{:.1E}'.format(val) for val in _Z_new     ]}")
+            print(f"New E:{ _E_new    } Difference:{[ (_E_new[i] - _E_current[i]) for i in range(len(_E_new))]}")
+            print()
+
+        def add_to_log():
+            lines = []
+            lines.append("Iteration", self._iteration )
+            lines.append("New:", str(_E_new), " diff:", str([ (_E_new[i] - _E_current[i]) for i in range(len(_E_new))]) )
+            for line in lines:
+                self._log.append(line)
+
         ## check acceptance. If heads, record the change, otherwise keep the previous hypergraph
         if _projects_to_graph and _cointoss:
             if self._periodic_print == 0:
-                print(f"\nIteration {self._iteration}")
-                print(f"hyperedge { _sub_hyperedge} : { _new_hypergraph.get( _sub_hyperedge, 0)}  ", end = '')
-                print(f"acceptance rate { acceptance_rate}, ", end='') #<- coin toss:{ _cointoss}")
-                print(f"len { len( _new_hypergraph)}")
-                print(f"Old E:{ _E_current}") # Z:{[ '{:.1E}'.format(val) for val in _Z_current ]}")
-                print(f"New E:{ _E_new    }") # Z:{[ '{:.1E}'.format(val) for val in _Z_new     ]}")
-                print()
+                #print_progress()
+                add_to_log()
                 self._periodic_print = self._print_period
             self._periodic_print -= 1
             return (True, _new_hypergraph, _P_H_new)
@@ -323,8 +324,12 @@ class Hypergraph_Reconstructor:
 
     ## main algorithm version 2
     ## use this method to run the algorithm for a set amount of iterations
-    ## needs init_hypergraph() to be run first
     def run_algorithm(self, iterations = None):
+
+        ## needs init_hypergraph() to be run first, otherwise will create unexpected behaviour
+        if self._hypergraph_initiated != 1:
+            print("Init hypergraph")
+            self.init_hypergraph()
 
         _result          = self.get_Prob_H( self._current_hypergraph)
         for val in _result[0]: pass
@@ -334,11 +339,13 @@ class Hypergraph_Reconstructor:
             assert type( iterations) == int and iterations > 0, "run_algorithm() error: iterations input"
             _ITERATIONS   = iterations
 
-        ### evidence, normalization
+        ### evidence, normalization, - unused due to infinitesimal values
         # add each iteration of P_G_H * P_H to this array, and then sum them up at the end
         #self._P_G_arr = [ ( _best_hypergraph, _best_hyperprior) ]
         #self._P_G     = 0
 
+        ### run for a set amount of iterations
+        start_time = time_ns()
         i = 0
         while i < _ITERATIONS:
             out = self.find_candidate_hypergraph( self._current_hypergraph)
@@ -354,6 +361,9 @@ class Hypergraph_Reconstructor:
                 self._P_G               += val
                 i               += 1
                 self._iteration += 1
+
+        end_time   = time_ns()
+        self._log.append(f"{_ITERATIONS} iterations took {end_time - start_time} ns.")
 
         return
 
@@ -376,7 +386,9 @@ class Hypergraph_Reconstructor:
         print(f"{stats} hyperedges pruned")
         return stats
     #
-
+    def output_to_log(self, fname = None):
+        if fname == None:
+            fname = self._filename_only + ".txt"
     ##### auxilliary methods #####
 
     ## for use when the original graph loaded consists of unconnected subgraphs, this creates a new graph that finds the largest subgraph out of the original graph
