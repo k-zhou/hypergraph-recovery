@@ -13,6 +13,8 @@ from helper_functions import *
 # graph  size: number of edges
 # graph order: number of vertices
 
+# How to program an automatic detection for reaching an equilibrium that only fluctuates little?
+
 ### Find best hypergraph ########################
 class Hypergraph_Reconstructor:
 
@@ -390,6 +392,8 @@ class Hypergraph_Reconstructor:
     def output_to_log(self, fname = None):
         if fname == None:
             fname = self._filename_only + ".txt"
+        write_to_file(fname, self._log)
+        return
     ##### auxilliary methods #####
 
     ## for use when the original graph loaded consists of unconnected subgraphs, this creates a new graph that finds the largest subgraph out of the original graph
