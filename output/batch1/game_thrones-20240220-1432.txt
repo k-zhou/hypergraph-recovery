@@ -1,0 +1,27 @@
+game_thrones.gt
+Iteration 10 New: [0, 0, 28, 25, 44, 30, 15, 1] diff:[0, 0, 0, 1, 0, 0, 0, 0]
+Iteration 20 New: [0, 0, 32, 25, 44, 30, 15, 1] diff:[0, 0, 1, 0, 0, 0, 0, 0]
+Iteration 30 New: [0, 0, 33, 25, 45, 30, 15, 1] diff:[0, 0, 1, 0, 0, 0, 0, 0]
+Iteration 40 New: [0, 0, 31, 24, 44, 30, 15, 1] diff:[0, 0, -1, 0, 0, 0, 0, 0]
+Iteration 50 New: [0, 0, 31, 24, 44, 30, 15, 1] diff:[0, 0, 1, 0, 0, 0, 0, 0]
+Iteration 60 New: [0, 0, 29, 24, 44, 30, 15, 1] diff:[0, 0, -1, 0, 0, 0, 0, 0]
+Iteration 70 New: [0, 0, 35, 24, 44, 30, 15, 1] diff:[0, 0, 1, 0, 0, 0, 0, 0]
+Iteration 80 New: [0, 0, 35, 24, 44, 30, 15, 1] diff:[0, 0, 1, 0, 0, 0, 0, 0]
+Iteration 90 New: [0, 0, 37, 24, 44, 30, 15, 1] diff:[0, 0, 1, 0, 0, 0, 0, 0]
+Iteration 100 New: [0, 0, 37, 24, 44, 30, 15, 1] diff:[0, 0, -1, 0, 0, 0, 0, 0]
+Iteration 110 New: [0, 0, 35, 24, 44, 30, 15, 1] diff:[0, 0, -1, 0, 0, 0, 0, 0]
+Iteration 120 New: [0, 0, 32, 25, 44, 30, 15, 1] diff:[0, 0, -1, 0, 0, 0, 0, 0]
+Iteration 130 New: [0, 0, 29, 24, 44, 30, 15, 1] diff:[0, 0, 1, 0, 0, 0, 0, 0]
+Iteration 140 New: [0, 0, 31, 24, 44, 30, 15, 1] diff:[0, 0, 1, 0, 0, 0, 0, 0]
+Iteration 150 New: [0, 0, 32, 24, 45, 30, 15, 1] diff:[0, 0, -1, 0, 0, 0, 0, 0]
+Iteration 160 New: [0, 0, 33, 24, 44, 30, 15, 1] diff:[0, 0, -1, 0, 0, 0, 0, 0]
+Iteration 170 New: [0, 0, 33, 24, 44, 30, 15, 1] diff:[0, 0, -1, 0, 0, 0, 0, 0]
+Iteration 180 New: [0, 0, 37, 24, 44, 30, 15, 1] diff:[0, 0, 1, 0, 0, 0, 0, 0]
+Iteration 190 New: [0, 0, 33, 24, 44, 30, 15, 1] diff:[0, 0, 1, 0, 0, 0, 0, 0]
+Iteration 200 New: [0, 0, 33, 24, 44, 30, 15, 1] diff:[0, 0, 1, 0, 0, 0, 0, 0]
+Auto-stopped algorithm at 201th iteration
+
+A target 10000 more iterations took 2549132056 ns.
+Total iterations 201
+Total algorithm runtime 2549132056 ns
+  or 2549.132056 ms

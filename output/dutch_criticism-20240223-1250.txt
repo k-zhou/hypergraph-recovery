@@ -1,0 +1,26 @@
+dutch_criticism.gt
+Iteration 10 New: [0, 0, 48, 20, 1] diff:[0, 0, 1, 0, 0]
+Iteration 20 New: [0, 0, 51, 21, 1] diff:[0, 0, 0, 1, 0]
+Iteration 30 New: [0, 0, 55, 20, 0] diff:[0, 0, 1, 0, 0]
+Iteration 40 New: [0, 0, 61, 18, 0] diff:[0, 0, 1, 0, 0]
+Iteration 50 New: [0, 0, 61, 20, 0] diff:[0, 0, -1, 0, 0]
+Iteration 60 New: [0, 0, 62, 17, 0] diff:[0, 0, 1, 0, 0]
+Iteration 70 New: [0, 0, 69, 16, 0] diff:[0, 0, 1, 0, 0]
+Iteration 80 New: [0, 0, 77, 14, 0] diff:[0, 0, 1, 0, 0]
+Iteration 90 New: [0, 0, 84, 11, 0] diff:[0, 0, 1, 0, 0]
+Iteration 100 New: [0, 0, 87, 8, 0] diff:[0, 0, 0, -1, 0]
+Iteration 110 New: [0, 0, 93, 6, 0] diff:[0, 0, 1, 0, 0]
+Iteration 120 New: [0, 0, 97, 4, 0] diff:[0, 0, 1, 0, 0]
+Iteration 130 New: [0, 0, 99, 0, 0] diff:[0, 0, 1, 0, 0]
+Iteration 140 New: [0, 0, 101, 0, 0] diff:[0, 0, -1, 0, 0]
+Iteration 150 New: [0, 0, 101, 0, 0] diff:[0, 0, 1, 0, 0]
+Iteration 160 New: [0, 0, 99, 0, 0] diff:[0, 0, 1, 0, 0]
+Iteration 170 New: [0, 0, 101, 0, 0] diff:[0, 0, 1, 0, 0]
+Iteration 180 New: [0, 0, 99, 0, 0] diff:[0, 0, 1, 0, 0]
+Iteration 190 New: [0, 0, 101, 0, 0] diff:[0, 0, 1, 0, 0]
+Auto-stopped algorithm at 200th iteration
+
+A target 10000 more iterations took 123475027 ns.
+Total iterations 200
+Total algorithm runtime 123475027 ns
+  or 123.475027 ms

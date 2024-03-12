@@ -1,0 +1,28 @@
+Kdl.gt
+Iteration 10 New: [0, 0, 848, 16] diff:[0, 0, -1, 0]
+Iteration 20 New: [0, 0, 855, 15] diff:[0, 0, 1, 0]
+Iteration 30 New: [0, 0, 861, 13] diff:[0, 0, 1, 0]
+Iteration 40 New: [0, 0, 864, 12] diff:[0, 0, 1, 0]
+Iteration 50 New: [0, 0, 870, 10] diff:[0, 0, 1, 0]
+Iteration 60 New: [0, 0, 875, 9] diff:[0, 0, 1, 0]
+Iteration 70 New: [0, 0, 876, 8] diff:[0, 0, -1, 0]
+Iteration 80 New: [0, 0, 883, 7] diff:[0, 0, 1, 0]
+Iteration 90 New: [0, 0, 882, 6] diff:[0, 0, 0, -1]
+Iteration 100 New: [0, 0, 885, 5] diff:[0, 0, -1, 0]
+Iteration 110 New: [0, 0, 894, 4] diff:[0, 0, 1, 0]
+Iteration 120 New: [0, 0, 902, 2] diff:[0, 0, 1, 0]
+Iteration 130 New: [0, 0, 905, 1] diff:[0, 0, 1, 0]
+Iteration 140 New: [0, 0, 908, 0] diff:[0, 0, 1, 0]
+Iteration 150 New: [0, 0, 908, 0] diff:[0, 0, 1, 0]
+Iteration 160 New: [0, 0, 908, 0] diff:[0, 0, 1, 0]
+Iteration 170 New: [0, 0, 908, 0] diff:[0, 0, 1, 0]
+Iteration 180 New: [0, 0, 908, 0] diff:[0, 0, -1, 0]
+Iteration 190 New: [0, 0, 908, 0] diff:[0, 0, 1, 0]
+Iteration 200 New: [0, 0, 908, 0] diff:[0, 0, 1, 0]
+Iteration 210 New: [0, 0, 908, 0] diff:[0, 0, 1, 0]
+Auto-stopped algorithm at 218th iteration
+
+A target 10000 more iterations took 975599727 ns.
+Total iterations 218
+Total algorithm runtime 975599727 ns
+  or 975.599727 ms

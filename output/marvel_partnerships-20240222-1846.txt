@@ -1,0 +1,26 @@
+marvel_partnerships.gt
+Iteration 10 New: [0, 0, 251, 27, 3, 2] diff:[0, 0, -1, 0, 0, 0]
+Iteration 20 New: [0, 0, 253, 27, 3, 2] diff:[0, 0, 1, 0, 0, 0]
+Iteration 30 New: [0, 0, 255, 27, 3, 2] diff:[0, 0, 1, 0, 0, 0]
+Iteration 40 New: [0, 0, 256, 27, 3, 1] diff:[0, 0, 1, 0, 0, 0]
+Iteration 50 New: [0, 0, 256, 27, 3, 1] diff:[0, 0, 1, 0, 0, 0]
+Iteration 60 New: [0, 0, 258, 27, 3, 1] diff:[0, 0, -1, 0, 0, 0]
+Iteration 70 New: [0, 0, 254, 27, 3, 1] diff:[0, 0, -1, 0, 0, 0]
+Iteration 80 New: [0, 0, 256, 27, 3, 1] diff:[0, 0, 1, 0, 0, 0]
+Iteration 90 New: [0, 0, 256, 27, 3, 1] diff:[0, 0, -1, 0, 0, 0]
+Iteration 100 New: [0, 0, 258, 27, 3, 1] diff:[0, 0, -1, 0, 0, 0]
+Iteration 110 New: [0, 0, 260, 27, 3, 1] diff:[0, 0, 1, 0, 0, 0]
+Iteration 120 New: [0, 0, 256, 27, 3, 1] diff:[0, 0, 1, 0, 0, 0]
+Iteration 130 New: [0, 0, 256, 27, 3, 1] diff:[0, 0, -1, 0, 0, 0]
+Iteration 140 New: [0, 0, 254, 27, 3, 1] diff:[0, 0, -1, 0, 0, 0]
+Iteration 150 New: [0, 0, 254, 27, 3, 1] diff:[0, 0, -1, 0, 0, 0]
+Iteration 160 New: [0, 0, 256, 27, 3, 1] diff:[0, 0, 1, 0, 0, 0]
+Iteration 170 New: [0, 0, 256, 27, 3, 1] diff:[0, 0, 1, 0, 0, 0]
+Iteration 180 New: [0, 0, 254, 27, 3, 1] diff:[0, 0, -1, 0, 0, 0]
+Iteration 190 New: [0, 0, 256, 27, 3, 1] diff:[0, 0, -1, 0, 0, 0]
+Auto-stopped algorithm at 200th iteration
+
+A target 10000 more iterations took 1500931218 ns.
+Total iterations 200
+Total algorithm runtime 1500931218 ns
+  or 1500.931218 ms

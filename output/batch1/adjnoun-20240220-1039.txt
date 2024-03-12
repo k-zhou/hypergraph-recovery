@@ -1,0 +1,403 @@
+adjnoun.gt
+Iteration 5
+New: [0, 0, 123, 138, 45, 3] diff:[0, 0, 1, 0, 0, 0]
+Iteration 10
+New: [0, 0, 127, 138, 45, 2] diff:[0, 0, 1, 0, 0, 0]
+Iteration 15
+New: [0, 0, 130, 138, 45, 2] diff:[0, 0, 1, 0, 0, 0]
+Iteration 20
+New: [0, 0, 130, 139, 45, 2] diff:[0, 0, -1, 0, 0, 0]
+Iteration 25
+New: [0, 0, 132, 139, 45, 1] diff:[0, 0, -1, 0, 0, 0]
+Iteration 30
+New: [0, 0, 136, 139, 45, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 35
+New: [0, 0, 140, 139, 44, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 40
+New: [0, 0, 141, 139, 44, 0] diff:[0, 0, -1, 0, 0, 0]
+Iteration 45
+New: [0, 0, 140, 139, 44, 0] diff:[0, 0, -1, 0, 0, 0]
+Iteration 50
+New: [0, 0, 139, 139, 44, 0] diff:[0, 0, -1, 0, 0, 0]
+Iteration 55
+New: [0, 0, 143, 140, 44, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 60
+New: [0, 0, 143, 142, 43, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 65
+New: [0, 0, 145, 142, 42, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 70
+New: [0, 0, 144, 142, 42, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 75
+New: [0, 0, 146, 142, 41, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 80
+New: [0, 0, 150, 142, 40, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 85
+New: [0, 0, 150, 143, 40, 0] diff:[0, 0, 0, 1, 0, 0]
+Iteration 90
+New: [0, 0, 151, 143, 38, 0] diff:[0, 0, 0, 0, -1, 0]
+Iteration 95
+New: [0, 0, 154, 143, 38, 0] diff:[0, 0, 0, 1, 0, 0]
+Iteration 100
+New: [0, 0, 154, 144, 36, 0] diff:[0, 0, 0, 0, -1, 0]
+Iteration 105
+New: [0, 0, 157, 144, 36, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 110
+New: [0, 0, 159, 145, 34, 0] diff:[0, 0, 0, 0, -1, 0]
+Iteration 115
+New: [0, 0, 164, 145, 34, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 120
+New: [0, 0, 168, 145, 33, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 125
+New: [0, 0, 169, 145, 31, 0] diff:[0, 0, -1, 0, 0, 0]
+Iteration 130
+New: [0, 0, 171, 145, 30, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 135
+New: [0, 0, 175, 146, 30, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 140
+New: [0, 0, 176, 146, 28, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 145
+New: [0, 0, 176, 146, 27, 0] diff:[0, 0, -1, 0, 0, 0]
+Iteration 150
+New: [0, 0, 180, 147, 27, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 155
+New: [0, 0, 183, 147, 27, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 160
+New: [0, 0, 186, 147, 25, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 165
+New: [0, 0, 189, 147, 25, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 170
+New: [0, 0, 189, 147, 24, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 175
+New: [0, 0, 193, 147, 23, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 180
+New: [0, 0, 195, 147, 22, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 185
+New: [0, 0, 198, 147, 22, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 190
+New: [0, 0, 197, 147, 20, 0] diff:[0, 0, -1, 0, 0, 0]
+Iteration 195
+New: [0, 0, 202, 147, 20, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 200
+New: [0, 0, 203, 148, 19, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 205
+New: [0, 0, 206, 149, 18, 0] diff:[0, 0, 0, 0, -1, 0]
+Iteration 210
+New: [0, 0, 210, 149, 17, 0] diff:[0, 0, 0, 0, -1, 0]
+Iteration 215
+New: [0, 0, 212, 149, 16, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 220
+New: [0, 0, 216, 149, 15, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 225
+New: [0, 0, 220, 149, 14, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 230
+New: [0, 0, 224, 149, 13, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 235
+New: [0, 0, 228, 149, 12, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 240
+New: [0, 0, 232, 149, 11, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 245
+New: [0, 0, 234, 150, 9, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 250
+New: [0, 0, 237, 150, 9, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 255
+New: [0, 0, 237, 150, 8, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 260
+New: [0, 0, 241, 150, 7, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 265
+New: [0, 0, 243, 149, 7, 0] diff:[0, 0, -1, 0, 0, 0]
+Iteration 270
+New: [0, 0, 246, 149, 5, 0] diff:[0, 0, 0, 0, -1, 0]
+Iteration 275
+New: [0, 0, 250, 149, 4, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 280
+New: [0, 0, 253, 149, 2, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 285
+New: [0, 0, 256, 150, 1, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 290
+New: [0, 0, 257, 150, 1, 0] diff:[0, 0, -1, 0, 0, 0]
+Iteration 295
+New: [0, 0, 259, 150, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 300
+New: [0, 0, 261, 149, 0, 0] diff:[0, 0, -1, 0, 0, 0]
+Iteration 305
+New: [0, 0, 265, 148, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 310
+New: [0, 0, 268, 146, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 315
+New: [0, 0, 267, 146, 0, 0] diff:[0, 0, -1, 0, 0, 0]
+Iteration 320
+New: [0, 0, 270, 144, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 325
+New: [0, 0, 274, 143, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 330
+New: [0, 0, 278, 142, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 335
+New: [0, 0, 280, 143, 0, 0] diff:[0, 0, 0, 1, 0, 0]
+Iteration 340
+New: [0, 0, 281, 141, 0, 0] diff:[0, 0, 0, -1, 0, 0]
+Iteration 345
+New: [0, 0, 285, 140, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 350
+New: [0, 0, 288, 140, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 355
+New: [0, 0, 288, 139, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 360
+New: [0, 0, 292, 138, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 365
+New: [0, 0, 296, 137, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 370
+New: [0, 0, 296, 136, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 375
+New: [0, 0, 297, 136, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 380
+New: [0, 0, 298, 136, 0, 0] diff:[0, 0, -1, 0, 0, 0]
+Iteration 385
+New: [0, 0, 300, 135, 0, 0] diff:[0, 0, 0, -1, 0, 0]
+Iteration 390
+New: [0, 0, 304, 134, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 395
+New: [0, 0, 307, 132, 0, 0] diff:[0, 0, 0, -1, 0, 0]
+Iteration 400
+New: [0, 0, 309, 131, 0, 0] diff:[0, 0, 0, -1, 0, 0]
+Iteration 405
+New: [0, 0, 312, 131, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 410
+New: [0, 0, 314, 130, 0, 0] diff:[0, 0, -1, 0, 0, 0]
+Iteration 415
+New: [0, 0, 316, 129, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 420
+New: [0, 0, 320, 128, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 425
+New: [0, 0, 321, 126, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 430
+New: [0, 0, 324, 126, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 435
+New: [0, 0, 327, 124, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 440
+New: [0, 0, 328, 124, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 445
+New: [0, 0, 329, 124, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 450
+New: [0, 0, 332, 124, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 455
+New: [0, 0, 334, 123, 0, 0] diff:[0, 0, 0, 1, 0, 0]
+Iteration 460
+New: [0, 0, 336, 122, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 465
+New: [0, 0, 339, 120, 0, 0] diff:[0, 0, 0, -1, 0, 0]
+Iteration 470
+New: [0, 0, 342, 118, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 475
+New: [0, 0, 344, 117, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 480
+New: [0, 0, 345, 115, 0, 0] diff:[0, 0, 0, -1, 0, 0]
+Iteration 485
+New: [0, 0, 347, 114, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 490
+New: [0, 0, 349, 113, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 495
+New: [0, 0, 351, 112, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+500 iterations took 1265754108 ns.
+Iteration 500
+New: [0, 0, 351, 111, 0, 0] diff:[0, 0, 0, -1, 0, 0]
+Iteration 505
+New: [0, 0, 354, 109, 0, 0] diff:[0, 0, 0, -1, 0, 0]
+Iteration 510
+New: [0, 0, 359, 109, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 515
+New: [0, 0, 363, 108, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 520
+New: [0, 0, 367, 107, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 525
+New: [0, 0, 370, 105, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 530
+New: [0, 0, 370, 104, 0, 0] diff:[0, 0, 0, -1, 0, 0]
+Iteration 535
+New: [0, 0, 374, 103, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 540
+New: [0, 0, 377, 101, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 545
+New: [0, 0, 379, 98, 0, 0] diff:[0, 0, 0, -1, 0, 0]
+Iteration 550
+New: [0, 0, 380, 98, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 555
+New: [0, 0, 383, 96, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 560
+New: [0, 0, 387, 95, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 565
+New: [0, 0, 390, 93, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 570
+New: [0, 0, 395, 93, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 575
+New: [0, 0, 399, 92, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 580
+New: [0, 0, 400, 90, 0, 0] diff:[0, 0, 0, -1, 0, 0]
+Iteration 585
+New: [0, 0, 404, 89, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 590
+New: [0, 0, 405, 89, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 595
+New: [0, 0, 409, 88, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 600
+New: [0, 0, 411, 87, 0, 0] diff:[0, 0, 0, -1, 0, 0]
+Iteration 605
+New: [0, 0, 414, 85, 0, 0] diff:[0, 0, 0, -1, 0, 0]
+Iteration 610
+New: [0, 0, 417, 85, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 615
+New: [0, 0, 419, 84, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 620
+New: [0, 0, 423, 83, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 625
+New: [0, 0, 427, 82, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 630
+New: [0, 0, 427, 81, 0, 0] diff:[0, 0, 0, -1, 0, 0]
+Iteration 635
+New: [0, 0, 430, 81, 0, 0] diff:[0, 0, 0, -1, 0, 0]
+Iteration 640
+New: [0, 0, 432, 80, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 645
+New: [0, 0, 434, 79, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 650
+New: [0, 0, 435, 79, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 655
+New: [0, 0, 437, 78, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 660
+New: [0, 0, 441, 77, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 665
+New: [0, 0, 443, 74, 0, 0] diff:[0, 0, 0, -1, 0, 0]
+Iteration 670
+New: [0, 0, 448, 74, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 675
+New: [0, 0, 451, 72, 0, 0] diff:[0, 0, 0, -1, 0, 0]
+Iteration 680
+New: [0, 0, 452, 70, 0, 0] diff:[0, 0, 0, -1, 0, 0]
+Iteration 685
+New: [0, 0, 455, 70, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 690
+New: [0, 0, 459, 69, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 695
+New: [0, 0, 462, 69, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 700
+New: [0, 0, 466, 68, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 705
+New: [0, 0, 470, 69, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 710
+New: [0, 0, 473, 67, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 715
+New: [0, 0, 477, 66, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 720
+New: [0, 0, 480, 66, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 725
+New: [0, 0, 481, 66, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 730
+New: [0, 0, 485, 65, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 735
+New: [0, 0, 486, 63, 0, 0] diff:[0, 0, 0, -1, 0, 0]
+Iteration 740
+New: [0, 0, 490, 62, 0, 0] diff:[0, 0, 0, -1, 0, 0]
+Iteration 745
+New: [0, 0, 492, 61, 0, 0] diff:[0, 0, -1, 0, 0, 0]
+Iteration 750
+New: [0, 0, 496, 60, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 755
+New: [0, 0, 499, 60, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 760
+New: [0, 0, 502, 58, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 765
+New: [0, 0, 506, 57, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 770
+New: [0, 0, 510, 56, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 775
+New: [0, 0, 514, 55, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 780
+New: [0, 0, 518, 54, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 785
+New: [0, 0, 522, 53, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 790
+New: [0, 0, 527, 53, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 795
+New: [0, 0, 531, 52, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 800
+New: [0, 0, 535, 51, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 805
+New: [0, 0, 537, 50, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 810
+New: [0, 0, 541, 49, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 815
+New: [0, 0, 544, 49, 0, 0] diff:[0, 0, -1, 0, 0, 0]
+Iteration 820
+New: [0, 0, 545, 47, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 825
+New: [0, 0, 548, 45, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 830
+New: [0, 0, 550, 44, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 835
+New: [0, 0, 553, 42, 0, 0] diff:[0, 0, 0, -1, 0, 0]
+Iteration 840
+New: [0, 0, 556, 40, 0, 0] diff:[0, 0, 0, -1, 0, 0]
+Iteration 845
+New: [0, 0, 560, 39, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 850
+New: [0, 0, 564, 38, 0, 0] diff:[0, 0, 0, -1, 0, 0]
+Iteration 855
+New: [0, 0, 568, 37, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 860
+New: [0, 0, 572, 36, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 865
+New: [0, 0, 576, 35, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 870
+New: [0, 0, 580, 34, 0, 0] diff:[0, 0, 0, -1, 0, 0]
+Iteration 875
+New: [0, 0, 582, 33, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 880
+New: [0, 0, 586, 32, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 885
+New: [0, 0, 589, 30, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 890
+New: [0, 0, 594, 30, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 895
+New: [0, 0, 597, 28, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 900
+New: [0, 0, 600, 26, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 905
+New: [0, 0, 604, 25, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 910
+New: [0, 0, 606, 24, 0, 0] diff:[0, 0, -1, 0, 0, 0]
+Iteration 915
+New: [0, 0, 609, 22, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 920
+New: [0, 0, 613, 21, 0, 0] diff:[0, 0, 0, -1, 0, 0]
+Iteration 925
+New: [0, 0, 618, 21, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 930
+New: [0, 0, 620, 20, 0, 0] diff:[0, 0, -1, 0, 0, 0]
+Iteration 935
+New: [0, 0, 625, 20, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 940
+New: [0, 0, 628, 18, 0, 0] diff:[0, 0, 0, -1, 0, 0]
+Iteration 945
+New: [0, 0, 633, 18, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 950
+New: [0, 0, 636, 16, 0, 0] diff:[0, 0, 0, -1, 0, 0]
+Iteration 955
+New: [0, 0, 641, 16, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 960
+New: [0, 0, 641, 15, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 965
+New: [0, 0, 643, 14, 0, 0] diff:[0, 0, 0, -1, 0, 0]
+Iteration 970
+New: [0, 0, 646, 14, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 975
+New: [0, 0, 648, 13, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 980
+New: [0, 0, 651, 11, 0, 0] diff:[0, 0, 0, -1, 0, 0]
+Iteration 985
+New: [0, 0, 654, 9, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 990
+New: [0, 0, 656, 8, 0, 0] diff:[0, 0, 0, -1, 0, 0]
+Iteration 995
+New: [0, 0, 659, 6, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+500 iterations took 1167011000 ns.
+Total iterations 1000Total algorithm runtime 2432765108 ns
+  or 2432.765108 ms

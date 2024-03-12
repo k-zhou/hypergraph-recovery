@@ -1,0 +1,42 @@
+blumenau_drug.gt
+Iteration 10 New: [0, 0, 110, 47] diff:[0, 0, 1, 0]
+Iteration 20 New: [0, 0, 115, 42] diff:[0, 0, 0, -1]
+Iteration 30 New: [0, 0, 121, 40] diff:[0, 0, 1, 0]
+Iteration 40 New: [0, 0, 127, 36] diff:[0, 0, 1, 0]
+Iteration 50 New: [0, 0, 134, 33] diff:[0, 0, 1, 0]
+Iteration 60 New: [0, 0, 143, 32] diff:[0, 0, 1, 0]
+Iteration 70 New: [0, 0, 144, 31] diff:[0, 0, 0, -1]
+Iteration 80 New: [0, 0, 151, 30] diff:[0, 0, 0, -1]
+Iteration 90 New: [0, 0, 155, 28] diff:[0, 0, 0, -1]
+Iteration 100 New: [0, 0, 160, 25] diff:[0, 0, 1, 0]
+Iteration 110 New: [0, 0, 168, 23] diff:[0, 0, 1, 0]
+Iteration 120 New: [0, 0, 175, 22] diff:[0, 0, 1, 0]
+Iteration 130 New: [0, 0, 177, 20] diff:[0, 0, 1, 0]
+Iteration 140 New: [0, 0, 185, 18] diff:[0, 0, 1, 0]
+Iteration 150 New: [0, 0, 192, 17] diff:[0, 0, 1, 0]
+Iteration 160 New: [0, 0, 200, 15] diff:[0, 0, 1, 0]
+Iteration 170 New: [0, 0, 205, 14] diff:[0, 0, 1, 0]
+Iteration 180 New: [0, 0, 211, 12] diff:[0, 0, 1, 0]
+Iteration 190 New: [0, 0, 216, 11] diff:[0, 0, 1, 0]
+Iteration 200 New: [0, 0, 225, 10] diff:[0, 0, 1, 0]
+Iteration 210 New: [0, 0, 228, 9] diff:[0, 0, 1, 0]
+Iteration 220 New: [0, 0, 234, 5] diff:[0, 0, 0, -1]
+Iteration 230 New: [0, 0, 240, 3] diff:[0, 0, 1, 0]
+Iteration 240 New: [0, 0, 246, 1] diff:[0, 0, 1, 0]
+Iteration 250 New: [0, 0, 249, 0] diff:[0, 0, -1, 0]
+Iteration 260 New: [0, 0, 251, 0] diff:[0, 0, -1, 0]
+Iteration 270 New: [0, 0, 249, 0] diff:[0, 0, -1, 0]
+Iteration 280 New: [0, 0, 253, 0] diff:[0, 0, -1, 0]
+Iteration 290 New: [0, 0, 251, 0] diff:[0, 0, -1, 0]
+Iteration 300 New: [0, 0, 253, 0] diff:[0, 0, -1, 0]
+Iteration 310 New: [0, 0, 257, 0] diff:[0, 0, 1, 0]
+Iteration 320 New: [0, 0, 251, 0] diff:[0, 0, 1, 0]
+Iteration 330 New: [0, 0, 255, 0] diff:[0, 0, 1, 0]
+Iteration 340 New: [0, 0, 257, 0] diff:[0, 0, -1, 0]
+Iteration 350 New: [0, 0, 255, 0] diff:[0, 0, -1, 0]
+Auto-stopped algorithm at 352th iteration
+
+A target 10000 more iterations took 316355304 ns.
+Total iterations 352
+Total algorithm runtime 316355304 ns
+  or 316.355304 ms

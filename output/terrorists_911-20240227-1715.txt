@@ -1,0 +1,28 @@
+terrorists_911.gt
+Iteration 10 New: [0, 0, 21, 24, 9, 4, 3] diff:[0, 0, 1, 0, 0, 0, 0]
+Iteration 20 New: [0, 0, 23, 24, 9, 4, 3] diff:[0, 0, 1, 0, 0, 0, 0]
+Iteration 30 New: [0, 0, 23, 24, 9, 4, 3] diff:[0, 0, 1, 0, 0, 0, 0]
+Iteration 40 New: [0, 0, 27, 24, 9, 4, 3] diff:[0, 0, 1, 0, 0, 0, 0]
+Iteration 50 New: [0, 0, 26, 25, 9, 4, 3] diff:[0, 0, 1, 0, 0, 0, 0]
+Iteration 60 New: [0, 0, 27, 26, 9, 4, 3] diff:[0, 0, 0, 1, 0, 0, 0]
+Iteration 70 New: [0, 0, 25, 24, 9, 4, 3] diff:[0, 0, -1, 0, 0, 0, 0]
+Iteration 80 New: [0, 0, 24, 25, 9, 4, 3] diff:[0, 0, -1, 0, 0, 0, 0]
+Iteration 90 New: [0, 0, 26, 25, 9, 4, 3] diff:[0, 0, -1, 0, 0, 0, 0]
+Iteration 100 New: [0, 0, 29, 24, 9, 4, 3] diff:[0, 0, -1, 0, 0, 0, 0]
+Iteration 110 New: [0, 0, 29, 25, 9, 4, 2] diff:[0, 0, 1, 0, 0, 0, 0]
+Iteration 120 New: [0, 0, 36, 25, 9, 4, 1] diff:[0, 0, 1, 0, 0, 0, 0]
+Iteration 130 New: [0, 0, 38, 25, 9, 4, 1] diff:[0, 0, 1, 0, 0, 0, 0]
+Iteration 140 New: [0, 0, 36, 25, 9, 4, 1] diff:[0, 0, 1, 0, 0, 0, 0]
+Iteration 150 New: [0, 0, 36, 25, 9, 4, 1] diff:[0, 0, 1, 0, 0, 0, 0]
+Iteration 160 New: [0, 0, 38, 25, 9, 4, 1] diff:[0, 0, -1, 0, 0, 0, 0]
+Iteration 170 New: [0, 0, 40, 25, 9, 4, 1] diff:[0, 0, 1, 0, 0, 0, 0]
+Iteration 180 New: [0, 0, 44, 25, 9, 4, 1] diff:[0, 0, 1, 0, 0, 0, 0]
+Iteration 190 New: [0, 0, 46, 25, 9, 4, 1] diff:[0, 0, 1, 0, 0, 0, 0]
+Iteration 200 New: [0, 0, 46, 25, 9, 4, 1] diff:[0, 0, -1, 0, 0, 0, 0]
+Iteration 210 New: [0, 0, 44, 25, 9, 4, 1] diff:[0, 0, -1, 0, 0, 0, 0]
+Auto-stopped algorithm at 217th iteration
+
+A target 10000 more iterations took 999015444 ns.
+Total iterations 217
+Total algorithm runtime 999015444 ns
+  or 999.015444 ms

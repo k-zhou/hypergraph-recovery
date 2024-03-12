@@ -1,0 +1,42 @@
+karate_77.gt
+Iteration 10 New: [0, 0, 21, 20, 2, 2] diff:[0, 0, 1, 0, 0, 0]
+Iteration 20 New: [0, 0, 20, 20, 2, 1] diff:[0, 0, 0, -1, 0, 0]
+Iteration 30 New: [0, 0, 24, 20, 2, 1] diff:[0, 0, -1, 0, 0, 0]
+Iteration 40 New: [0, 0, 24, 20, 2, 1] diff:[0, 0, 1, 0, 0, 0]
+Iteration 50 New: [0, 0, 31, 20, 2, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 60 New: [0, 0, 35, 21, 1, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 70 New: [0, 0, 38, 20, 1, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 80 New: [0, 0, 38, 20, 1, 0] diff:[0, 0, -1, 0, 0, 0]
+Iteration 90 New: [0, 0, 40, 21, 0, 0] diff:[0, 0, -1, 0, 0, 0]
+Iteration 100 New: [0, 0, 44, 19, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 110 New: [0, 0, 46, 19, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 120 New: [0, 0, 51, 18, 0, 0] diff:[0, 0, -1, 0, 0, 0]
+Iteration 130 New: [0, 0, 54, 17, 0, 0] diff:[0, 0, -1, 0, 0, 0]
+Iteration 140 New: [0, 0, 61, 14, 0, 0] diff:[0, 0, 0, -1, 0, 0]
+Iteration 150 New: [0, 0, 66, 13, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 160 New: [0, 0, 69, 12, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 170 New: [0, 0, 67, 12, 0, 0] diff:[0, 0, -1, 0, 0, 0]
+Iteration 180 New: [0, 0, 74, 11, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 190 New: [0, 0, 79, 10, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 200 New: [0, 0, 82, 9, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 210 New: [0, 0, 86, 7, 0, 0] diff:[0, 0, -1, 0, 0, 0]
+Iteration 220 New: [0, 0, 93, 6, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 230 New: [0, 0, 97, 4, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 240 New: [0, 0, 100, 3, 0, 0] diff:[0, 0, -1, 0, 0, 0]
+Iteration 250 New: [0, 0, 103, 2, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 260 New: [0, 0, 108, 1, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 270 New: [0, 0, 111, 0, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 280 New: [0, 0, 113, 0, 0, 0] diff:[0, 0, -1, 0, 0, 0]
+Iteration 290 New: [0, 0, 115, 0, 0, 0] diff:[0, 0, -1, 0, 0, 0]
+Iteration 300 New: [0, 0, 115, 0, 0, 0] diff:[0, 0, -1, 0, 0, 0]
+Iteration 310 New: [0, 0, 113, 0, 0, 0] diff:[0, 0, -1, 0, 0, 0]
+Iteration 320 New: [0, 0, 113, 0, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 330 New: [0, 0, 111, 0, 0, 0] diff:[0, 0, 1, 0, 0, 0]
+Iteration 340 New: [0, 0, 113, 0, 0, 0] diff:[0, 0, -1, 0, 0, 0]
+Iteration 350 New: [0, 0, 111, 0, 0, 0] diff:[0, 0, -1, 0, 0, 0]
+Auto-stopped algorithm at 352th iteration
+
+A target 10000 more iterations took 257380436 ns.
+Total iterations 352
+Total algorithm runtime 257380436 ns
+  or 257.380436 ms
