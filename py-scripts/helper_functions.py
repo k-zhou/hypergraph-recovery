@@ -2,6 +2,7 @@ from time      import struct_time, strftime
 
 ALT_FILE_SUFFIX_NUMBER = 1
 
+### maths methods
 # helper: calculate  a! / b!
 def factorial_div_factorial(top, bot):
     assert type(top) == int
@@ -60,6 +61,7 @@ def get_filename_suffix(fname, ch = None):
             last = j
     stripped = fname[last_:]
     return stripped
+    
 ### Dates
 #
 def get_date_custom():
