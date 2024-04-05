@@ -49,7 +49,7 @@ def run_algorithm( max_iterations = None):
     else:
         print("No files loaded.")
 
-# TODO: output to file
+# output to file, incomplete, implementing in the class instead as a class method
 # saves the log to file
 def save_output():
     global RECONSTRUCTORS, OUTPUT_LOCATION

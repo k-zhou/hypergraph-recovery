@@ -46,6 +46,16 @@ class Hypergraph_Reconstructor:
         self._periodic_print         = self._print_period
         self._iteration              = 0
         self._hypergraph_initiated   = 0
+        self._history                = [] # used to track the changes of h-edges during each iteration, each element corresponding to
+                                            # a string row when outputting to a txt file.
+                                            # The first line is the initial count of different sized h-edges i.e. 
+                                            # the same format as the array E: n0 n1 n2 n3 e.g.
+                                            # 0 0 30 5 4 2
+                                            # 0 0 295 23 10 2 1 1
+                                            # Every line after that is the size of the h-edge being added/removed with a + or - e.g. :   
+                                            # 2 +
+                                            # 5 -
+
         self._log                    = [] # a list of types convertible to string, later exportable to a log file
 
         self._log.append(self._filename_pathless)
@@ -57,10 +67,10 @@ class Hypergraph_Reconstructor:
 
 
     # Sets (or resets) the current hypergraph using some initialisation method on the original graph
-    # Returns void
-    def init_hypergraph(self):
+    def init_hypergraph(self) -> None:
 
         self._current_hypergraph = dict() # datatype: dict of frozensets of uints (mappable to graph_tool.Vertices), maps to Z+
+        _init_E = dict() # Keeps track of the count of all h-edges sized n in the initial state, refer to self._history
         ### Current methodology: Adds all maximal cliques as hyperedges to the hypergraph.
         _m_cliques      = max_cliques( self._g ) # returns: iterator over numpy.ndarray
         for clique in _m_cliques:
@@ -72,6 +82,15 @@ class Hypergraph_Reconstructor:
             if _edge_size > self._maximal_hyperedge_size:
                 self._maximal_hyperedge_size = _edge_size
 
+            # also fill in the first row of self._history
+            _init_E[_edge_size] = _init_E.get(_edge_size, 0) + 1
+        # continues ...
+        h_line = ""
+        for i in range(self._maximal_hyperedge_size + 1):
+            h_line += f"{_init_E.get(i, 0)} "
+        h_line += '\n'
+        self._history.append(h_line)
+
         ### Alternative methods include random init, edge init, or empty (page 6, last paragraph before section [D] )
         #
         self._hypergraph_initiated = 1
@@ -81,8 +100,7 @@ class Hypergraph_Reconstructor:
     ## projection component -- equation (2)
 
     ## helper function, projects a single hyperedge to edges, to the provided adjacency list
-    ## returns void
-    def project_hyperedge(self, hyperedge, adj ):
+    def project_hyperedge(self, hyperedge, adj ) -> None:
 
         assert type( hyperedge) == frozenset, "_hyperedge is not a frozenset"
         _gen = combinations( hyperedge, 2)
@@ -93,7 +111,7 @@ class Hypergraph_Reconstructor:
 
     # helper function, finds the adjacency list (dictionary) of a graph_tool.Graph
     # returns a dict( frozenset() ) -> int Z+
-    def get_adjacency_from_Graph(self, graph):
+    def get_adjacency_from_Graph(self, graph) -> dict:
 
         assert type(graph) == graph_tool.Graph, "the input is not a Graph object"
         _adj_graph = dict()
@@ -105,7 +123,7 @@ class Hypergraph_Reconstructor:
 
     # helper function, finds the adjacency list (dictionary) of a hypergraph projected down
     # returns a dict( frozenset() ) -> int Z+
-    def get_adjacency_from_hypergraph(self, hypergraph):
+    def get_adjacency_from_hypergraph(self, hypergraph) -> dict:
 
         assert type(hypergraph) == dict, "hypergraph is not a dictionary type"
         _adj_G_projected = dict()
@@ -307,6 +325,23 @@ class Hypergraph_Reconstructor:
             print(f"New E:{ _E_new    } Difference:{[ (_E_new[i] - _E_current[i]) for i in range(len(_E_new))]}")
             print()
 
+        # Refer to initialisation of self._history
+        def add_to_history():
+            change_i = 0
+            change_sign = ""
+            for i in range(len(_E_new)):
+                change = _E_new[i] - _E_current[i]
+                if change == 0:
+                    continue
+                else:
+                    change_i = i
+                    if change == 1:
+                        change_sign = "+"
+                    else:
+                        change_sign = "-"
+                    break
+            self._history.append(change_i + ' ' + change_sign + '\n' )
+
         def add_to_log():
             lines = []
             lines.append("Iteration", self._iteration )
@@ -321,13 +356,15 @@ class Hypergraph_Reconstructor:
                 add_to_log()
                 self._periodic_print = self._print_period
             self._periodic_print -= 1
+            
+            add_to_history()
             return (True, _new_hypergraph, _P_H_new)
         else:
             return (False, hypergraph, _P_H_current)
 
     ## main algorithm version 2
     ## use this method to run the algorithm for a set amount of iterations
-    def run_algorithm(self, iterations = None):
+    def run_algorithm(self, iterations = None) -> None:
 
         ## needs init_hypergraph() to be run first, otherwise will create unexpected behaviour
         if self._hypergraph_initiated != 1:
@@ -376,7 +413,7 @@ class Hypergraph_Reconstructor:
     ## edit 1: or no, it doesn't now. What is going on? Now it's stabilizing around some values
     #  edit 2: Think I've found an odd bug. After loading up the file into the object you'd normally need to use the method init_hypergraph() to set the initial state for the algorithm to run on. If you do this, the test graph windsurfers.gt will stabilize to some hypergraph of 800 2-edges. If you don't initialize and try to run the algorithm, it'll throw an error as per planned; but if you then initialize it and run the recovery algorithm, it will "stabilize" around 400 2-edges 430 3-edges. The 3-edges part is stable but the 2-edges part will endlessly rise in count.
 
-    def prune_hypergraph(self, threshold):
+    def prune_hypergraph(self, threshold) -> int:
 
         assert type( threshold)  == int and threshold >= 0
 
@@ -388,12 +425,20 @@ class Hypergraph_Reconstructor:
                 self._current_hypergraph[ hyperedge] = threshold
         print(f"{stats} hyperedges pruned")
         return stats
-    #
-    def output_to_log(self, fname = None):
+    
+    # logging
+    def output_to_log(self, fname = None) -> None:
         if fname == None:
             fname = self._filename_only + ".txt"
         write_to_file(fname, self._log)
         return
+    
+    def output_history_to_log(self, fname = None) -> None:
+        if fname == None:
+            fname = self._filename_only + "_history" + ".txt"
+        write_to_file(fname, self._history)
+        return
+    
     ##### auxilliary methods #####
 
     ## for use when the original graph loaded consists of unconnected subgraphs, this creates a new graph that finds the largest subgraph out of the original graph
