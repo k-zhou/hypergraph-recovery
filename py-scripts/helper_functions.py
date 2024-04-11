@@ -134,6 +134,31 @@ def read_dict_fs_to_var(filename, dict_var) -> bool:
                 dict_var[frozenset(s)] = n
             line = fr.readline()
     return True
+
+def convert_history_to_plot_array(filename, plot_arr) -> None:
+    with open(filename, mode='rt', encoding="utf-8") as f:
+
+        line  = f.readline()
+        E     = [int(x) for x in line.split(' ')]
+        plot_arr.append(E)
+
+        it   = 1
+        line = f.readline()
+        while(line):
+            split = line.split(' ')
+            n     = int(split[0])
+            sign  = split[1]
+            if   sign == '+':
+                E[it][n] += 1
+            elif sign == '-':
+                E[it][n] -= 1
+            else:
+                raise Exception("erroneous data")
+            plot_arr.append[E]
+            it   += 1
+            line  = f.readline()
+    return True
+
 ################################
 
 # def print_list_magnitudes(list, end = None):

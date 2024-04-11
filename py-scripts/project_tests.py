@@ -1,6 +1,16 @@
 
 from Hypergraph_Reconstructor import *
 
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import numpy as np
+
+
+# https://matplotlib.org/stable/users/faq.html
+# plot([x], y)
+# savefig()
+
+
 # (!) Notice (!)
 # Many of these are using functions now moved under the H-Reconstructor class
 
