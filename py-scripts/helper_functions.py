@@ -139,7 +139,14 @@ def convert_history_to_plot_array(filename, plot_arr) -> None:
     with open(filename, mode='rt', encoding="utf-8") as f:
 
         line  = f.readline()
-        E     = [int(x) for x in line.split(' ')]
+        #E     = [int(x) for x in line.split(' ')]
+        E     = line.split(' ')
+        for i in range(len(E)):
+            if E[i].isnumeric():
+                E[i] = int(E[i])
+            else:
+                E.pop(i)
+
         plot_arr.append(E)
 
         it   = 1
