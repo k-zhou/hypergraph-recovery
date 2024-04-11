@@ -31,6 +31,7 @@ def strip_filename_path(fname, ch = None):
         j = len(fname) -1 -i
         if fname[j] == ch:
             last_ = j # assuming the path and file is valid
+            break
 
     stripped = fname[last_ + 1: ]
     return stripped
@@ -45,6 +46,7 @@ def strip_filename_suffix(fname, ch = None):
         j = len(fname) -1 -i
         if fname[j] == ch:
             last_ = j # assuming the path and file is valid
+            break
 
     stripped = fname[0:last_]
     return stripped
@@ -57,7 +59,9 @@ def get_filename_suffix(fname, ch = None):
     for i in range(0, len(fname)):
         j = len(fname) -1 -i
         if fname[j] == ch:
-            last = j
+            last_ = j
+            break
+
     stripped = fname[last_:]
     return stripped
 ### Dates
@@ -86,8 +90,10 @@ def get_alt_suff():
 def write_to_file(fname, data):
     filename   = strip_filename_suffix(fname)
     filesuffix = get_filename_suffix(fname)
+    print(f"fname {fname} \nfilename {filename} \nfilesuffix {filesuffix}\n") # DEBUG
     data    = data
-    global f, tryname
+    file    = str()
+    tryname = str()
     try:
         tryname = filename + get_date_custom() + filesuffix
         file    = open(tryname, "xt")
