@@ -32,19 +32,47 @@ class Hypergraph_Reconstructor:
         self._adj_graph              = self.get_adjacency_from_Graph(self._g) # adjacency list as a dict( frozensets) -> Z+
         self._graph_edges_total      = self._g.num_edges()
         self._graph_order            = self._g.num_vertices()
-        self._maximal_hyperedge_size = 2  # to be determined later while running the algorithm
+        self._maximal_hyperedge_size = 2  # to be determined later while running the algorithm, also update _stopping_arr
         self._mu                     = 1  # equation (11), to be determined later
         self._epsilon                = pow(10, -6) # cutoff point for miniscule prob calculations
 
         self._current_hypergraph     = dict()
         #self._best_hypergraph        = self._current_hypergraph
         self._best_hyperprior        = 1
-        self._P_G_arr                = []
+        self._P_G_arr                = [] # mostly unused, holds tuples of (hypergraph, hyperprior (Int))
         self._P_G                    = 1
 
-        self._print_period           = 5 # used to control printing to console only periodically
+        ## the current hypergraph's tally of hyperedges of size k, ordered by index
+        # i.e. [2] holds the tally of 2-edges, [3] holds the tally of 3-edges etc.
+        self._current_E_arr          = []
+        self._diff_E                 = (0, 0)
+
+        ## For use in automatically stopping the algorithm.
+        # Reasoning: When this algorithm approaches an equilibrium, the average of changes in
+        # hyperedge counts, - regardless of the size of the hyperedge, will approach zero.
+        # For this, use an array as a rolling window to keep track of the changes in the tally of all sizes of hyperedges
+        # in the past 100 iterations, sum them up, and use an error margin of 5% to stop the algorithm automatically.
+
+        # _stopping_arr needs a more specific dimension that is the same as _E_k or _current_E_arr, to be defined later together with _maximal_hyperedge_size
+        # (v, k) v takes the two values  [-1, +1], k takes the int values [0, k_max] where k_max is the _maximal_hyperedge_size
+        # At every iteration, from the array _rolling_window, take the tuple (v, k) pointed to by index _rw_index,
+        # subtract the value v from the array _stopping_arr at index k, replace (v, k) with the change in _E_k that leads to _current_E_arr,
+        #  add this new value v_new to _stopping_arr at k_new given by _diff_E
+        # advance _rw_index, and wrap back around if past index bounds,
+        # calculate the folded sum of _stopping_arr and stop the algorithm when it approaches 0.
+        self._stopping_arr           = []
+        self._rw_size                = 100
+        self._rolling_window         = [ (0, 0) for i in range(0, self._rw_size) ]
+        self._rw_index               = 0
+        self._stopping_sum           = 0
+        self._auto_stopped           = False
+        # stats
+        self._print_period           = 10 # used to control printing to console only periodically
+        if not print_period == None:
+            self._print_period = print_period
         self._periodic_print         = self._print_period
         self._iteration              = 0
+        self._runtime                = 0 # runtime of the algorithm in ns
         self._hypergraph_initiated   = 0
         self._history                = [] # used to track the changes of h-edges during each iteration, each element corresponding to
                                             # a string row when outputting to a txt file.
@@ -59,6 +87,7 @@ class Hypergraph_Reconstructor:
         self._log                    = [] # a list of types convertible to string, later exportable to a log file
 
         self._log.append(self._filename_pathless)
+        print(f"File: {self._filename}\n") #Print period {self._print_period}")
 
     ##########################
 
@@ -71,6 +100,8 @@ class Hypergraph_Reconstructor:
 
         self._current_hypergraph = dict() # datatype: dict of frozensets of uints (mappable to graph_tool.Vertices), maps to Z+
         _init_E = dict() # Keeps track of the count of all h-edges sized n in the initial state, refer to self._history
+        current_E_arr_wip        = [] # use as linked list, collect all the hyperedges as their size here for the zeroth iteration
+
         ### Current methodology: Adds all maximal cliques as hyperedges to the hypergraph.
         _m_cliques      = max_cliques( self._g ) # returns: iterator over numpy.ndarray
         for clique in _m_cliques:
@@ -79,6 +110,7 @@ class Hypergraph_Reconstructor:
 
             # simultaneously find out maximal hyperedge size _L
             _edge_size = len(clique)
+            current_E_arr_wip.append(_edge_size)
             if _edge_size > self._maximal_hyperedge_size:
                 self._maximal_hyperedge_size = _edge_size
 
@@ -91,6 +123,11 @@ class Hypergraph_Reconstructor:
         h_line += '\n'
         self._history.append(h_line)
 
+        self._stopping_arr  = [ 0 for i in range(0, self._maximal_hyperedge_size + 1) ]
+        self._current_E_arr = [ 0 for i in range(0, self._maximal_hyperedge_size + 1) ]
+        for e_size in current_E_arr_wip:
+            self._current_E_arr[e_size] += 1 #
+
         ### Alternative methods include random init, edge init, or empty (page 6, last paragraph before section [D] )
         #
         self._hypergraph_initiated = 1
@@ -100,7 +137,8 @@ class Hypergraph_Reconstructor:
     ## projection component -- equation (2)
 
     ## helper function, projects a single hyperedge to edges, to the provided adjacency list
-    def project_hyperedge(self, hyperedge, adj ) -> None:
+    ## returns void
+    def project_hyperedge(self, hyperedge, adj ):
 
         assert type( hyperedge) == frozenset, "_hyperedge is not a frozenset"
         _gen = combinations( hyperedge, 2)
@@ -123,7 +161,7 @@ class Hypergraph_Reconstructor:
 
     # helper function, finds the adjacency list (dictionary) of a hypergraph projected down
     # returns a dict( frozenset() ) -> int Z+
-    def get_adjacency_from_hypergraph(self, hypergraph) -> dict:
+    def get_adjacency_from_hypergraph(self, hypergraph):
 
         assert type(hypergraph) == dict, "hypergraph is not a dictionary type"
         _adj_G_projected = dict()
@@ -344,8 +382,7 @@ class Hypergraph_Reconstructor:
 
         def add_to_log():
             lines = []
-            lines.append("Iteration", self._iteration )
-            lines.append("New:", str(_E_new), " diff:", str([ (_E_new[i] - _E_current[i]) for i in range(len(_E_new))]) )
+            lines.append(f"Iteration {self._iteration} New: {str(_E_new)} diff:{str([ (_E_new[i] - _E_current[i]) for i in range(len(_E_new))])}" )
             for line in lines:
                 self._log.append(line)
 
@@ -356,20 +393,30 @@ class Hypergraph_Reconstructor:
                 add_to_log()
                 self._periodic_print = self._print_period
             self._periodic_print -= 1
-            
+
             add_to_history()
+
+            # auto-stop
+            diff_arr            = [ _E_new[i] - self._current_E_arr[i] for i in range(0, len( _E_new)) ]
+            for i in range(0, len(diff_arr)):
+                e_size = diff_arr[i]
+                if not e_size == 0:
+                    self._diff_E = (e_size, i)
+                    break
+            self._current_E_arr = _E_new
             return (True, _new_hypergraph, _P_H_new)
         else:
             return (False, hypergraph, _P_H_current)
 
     ## main algorithm version 2
     ## use this method to run the algorithm for a set amount of iterations
-    def run_algorithm(self, iterations = None) -> None:
+    def run_algorithm(self, iterations = None, autostop = None, min_iterations = None):
 
         ## needs init_hypergraph() to be run first, otherwise will create unexpected behaviour
         if self._hypergraph_initiated != 1:
-            print("Init hypergraph")
+            #print(f"Init hypergraph: {self._filename_only}")
             self.init_hypergraph()
+            self.status()
 
         _result          = self.get_Prob_H( self._current_hypergraph)
         for val in _result[0]: pass
@@ -378,6 +425,12 @@ class Hypergraph_Reconstructor:
         if not iterations == None:
             assert type( iterations) == int and iterations > 0, "run_algorithm() error: iterations input"
             _ITERATIONS   = iterations
+        _autostop        = True
+        if not autostop == None:
+            _autostop = bool(autostop)
+        _min_iterations   = self._rw_size*2
+        if not min_iterations == None:
+            _min_iterations = int(min_iterations)
 
         ### evidence, normalization, - unused due to infinitesimal values
         # add each iteration of P_G_H * P_H to this array, and then sum them up at the end
@@ -402,8 +455,37 @@ class Hypergraph_Reconstructor:
                 i               += 1
                 self._iteration += 1
 
+                # Auto-stopping
+                tup  = self._rolling_window[self._rw_index]
+                self._stopping_arr[tup[1]] -= tup[0]
+                self._stopping_sum -= tup[0] # simpler alternate solution, can use instead of folding sum
+
+                tup  = self._diff_E
+                self._rolling_window[self._rw_index] = tup
+                self._stopping_arr[tup[1]] += tup[0]
+                self._stopping_sum += tup[0] # simpler alternate solution
+
+                self._rw_index += 1
+                if self._rw_index >= self._rw_size:
+                    self._rw_index = 0
+                
+                # fold_sum = 0
+                # for E_k in self._stopping_arr:
+                #     fold_sum += E_k
+                fold_sum = self._stopping_sum # simpler alternate solution
+                # auto-stop the algorithm
+                if _autostop and i >= _min_iterations:
+                    if -5 < fold_sum and fold_sum < 5:
+                        self._auto_stopped = True
+                        i = _ITERATIONS
+                        print(f"Auto-stopping algorithm at {self._iteration}th iteration; {fold_sum}")
+                        self._log.append(f"Auto-stopped algorithm at {self._iteration}th iteration\n")
+
+
         end_time   = time_ns()
-        self._log.append(f"{_ITERATIONS} iterations took {end_time - start_time} ns.")
+        runtime    = end_time - start_time
+        self._runtime += runtime
+        self._log.append(f"A target {_ITERATIONS} more iterations took {runtime} ns.")
 
         return
 
@@ -429,8 +511,15 @@ class Hypergraph_Reconstructor:
     # logging
     def output_to_log(self, fname = None) -> None:
         if fname == None:
-            fname = self._filename_only + ".txt"
-        write_to_file(fname, self._log)
+            fname = self._file_path + self._filename_only + ".txt"
+        data_to_write = ""
+        for item in self._log:
+            data_to_write += str(item) + '\n'
+        # additional final details
+        data_to_write += f"Total iterations {self._iteration}\n"
+        data_to_write += f"Total algorithm runtime {self._runtime} ns\n  or {self._runtime / 1000000} ms"
+
+        write_to_file(fname, data_to_write)
         return
     
     def output_history_to_log(self, fname = None) -> None:
@@ -461,3 +550,11 @@ class Hypergraph_Reconstructor:
                 for node in traversed_nodes:
                     orders_dict[node] = order
         # TODO: turn this dict into a new graph object
+
+    ## Prints the current state of the hypergraph
+    def status(self):
+        print(f"--- Status of {self._filename} ---")
+        print(f"Current iteration: {self._iteration}")
+        print(f"Edges of size k: {self._current_E_arr}")
+        print(f"Auto-stop state: {self._stopping_arr}\n rw_index {self._rw_index} ; stopping sum {self._stopping_sum}")
+        print(f"Total runtime: {self._runtime} ns or {self._runtime / 1000000} ms")
