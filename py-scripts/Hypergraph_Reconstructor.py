@@ -41,6 +41,9 @@ class Hypergraph_Reconstructor:
         self._best_hyperprior        = 1
         self._P_G_arr                = [] # mostly unused, holds tuples of (hypergraph, hyperprior (Int))
         self._P_G                    = 1
+        self._P_H_current            = 0
+        self._E_current              = []
+        self._Z_current              = []
 
         ## the current hypergraph's tally of hyperedges of size k, ordered by index
         # i.e. [2] holds the tally of 2-edges, [3] holds the tally of 3-edges etc.
@@ -131,6 +134,9 @@ class Hypergraph_Reconstructor:
 
         ### Alternative methods include random init, edge init, or empty (page 6, last paragraph before section [D] )
         #
+        ### find hyperprior P(H) of the current
+        ( self._P_H_current, self._E_current, self._Z_current) = self.get_Prob_H( self._current_hypergraph)
+        
         self._hypergraph_initiated = 1
 
         return
@@ -265,17 +271,17 @@ class Hypergraph_Reconstructor:
      # Bool is True when the hypergraph is different from the input
      #
      # float is the hyperprior of the hypergraph
-    def find_candidate_hypergraph(self, hypergraph ):
+    def find_candidate_hypergraph(self):
 
         _N  = self._graph_order
         _L  = self._maximal_hyperedge_size
 
-        if len( hypergraph) == 0:
+        if len(self._current_hypergraph) == 0:
             raise Exception("Error: hypergraph size 0... Have you initialized the hypergraph?")
             #return (False, hypergraph, self.get_Prob_H( hypergraph)[0] )
 
         ## Find maximal hyperedge
-        _new_hypergraph = hypergraph.copy()
+        _new_hypergraph = self._current_hypergraph.copy()
         _largest        = frozenset({})
         _size_largest   = len( _largest)
         for hyperedge in _new_hypergraph:
@@ -336,15 +342,14 @@ class Hypergraph_Reconstructor:
 
         #print(f" -> { _new_hypergraph.get( _sub_hyperedge, 0)}")
 
-        ## calculate the hyperpriors P(H) and compare
-        ( _P_H_current, _E_current, _Z_current) = self.get_Prob_H(      hypergraph)
-        ( _P_H_new    , _E_new    , _Z_new    ) = self.get_Prob_H( _new_hypergraph)
+        ## calculate the hyperprior P(H) and compare to previous
+        ( _P_H_new, _E_new, _Z_new) = self.get_Prob_H( _new_hypergraph)
 
         acceptance_rate = 1
         for k in range(2, _L+1):
-            term1 = factorial_div_factorial( _E_new[k], _E_current[k])
-            term2 = _Z_current[k] / _Z_new[k]
-            term3 = pow( (comb( _N, k) * (1/ self._mu) +1), _E_current[k] - _E_new[k])
+            term1 = factorial_div_factorial( _E_new[k], self._E_current[k])
+            term2 = self._Z_current[k] / _Z_new[k]
+            term3 = pow( (comb( _N, k) * (1/ self._mu) +1), self._E_current[k] - _E_new[k])
             prod  = term1 * term2 * term3
             acceptance_rate *= prod
             #print(f"{prod} ", end = '') # debug
@@ -361,7 +366,7 @@ class Hypergraph_Reconstructor:
             print(f"len { len( _new_hypergraph)}")
             #print(f"Old E:{ _E_current}") # Z:{[ '{:.1E}'.format(val) for val in _Z_current ]}")
             #print(f"New E:{ _E_new    }") # Z:{[ '{:.1E}'.format(val) for val in _Z_new     ]}")
-            print(f"New E:{ _E_new    } Difference:{[ (_E_new[i] - _E_current[i]) for i in range(len(_E_new))]}")
+            print(f"New E:{ _E_new    } Difference:{[ (_E_new[i] - self._E_current[i]) for i in range(len(_E_new))]}")
             print()
 
         # Refer to initialisation of self._history
@@ -369,7 +374,7 @@ class Hypergraph_Reconstructor:
             change_i = 0
             change_sign = ""
             for i in range(len(_E_new)):
-                change = _E_new[i] - _E_current[i]
+                change = _E_new[i] - self._E_current[i]
                 if change == 0:
                     continue
                 else:
@@ -384,7 +389,7 @@ class Hypergraph_Reconstructor:
 
         def add_to_log():
             lines = []
-            lines.append(f"Iteration {self._iteration} New: {str(_E_new)} diff:{str([ (_E_new[i] - _E_current[i]) for i in range(len(_E_new))])}" )
+            lines.append(f"Iteration {self._iteration} New: {str(_E_new)} diff:{str([ (_E_new[i] - self._E_current[i]) for i in range(len(_E_new))])}" )
             for line in lines:
                 self._log.append(line)
 
@@ -406,9 +411,10 @@ class Hypergraph_Reconstructor:
                     self._diff_E = (e_size, i)
                     break
             self._current_E_arr = _E_new
+            ( self._P_H_current, self._E_current, self._Z_current) = ( _P_H_new, _E_new, _Z_new)
             return (True, _new_hypergraph, _P_H_new)
         else:
-            return (False, hypergraph, _P_H_current)
+            return (False, self._current_hypergraph, self._P_H_current)
 
     ## main algorithm version 2
     ## use this method to run the algorithm for a set amount of iterations
@@ -443,7 +449,7 @@ class Hypergraph_Reconstructor:
         start_time = time_ns()
         i = 0
         while i < _ITERATIONS:
-            out = self.find_candidate_hypergraph( self._current_hypergraph)
+            out = self.find_candidate_hypergraph()
             if out[0]:
                 _current_hypergraph      = out[1]
                 gen                      = out[2]
