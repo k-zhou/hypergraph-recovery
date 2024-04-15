@@ -137,7 +137,8 @@ class Hypergraph_Reconstructor:
     ## projection component -- equation (2)
 
     ## helper function, projects a single hyperedge to edges, to the provided adjacency list
-    def project_hyperedge(self, hyperedge, adj ) -> None:
+    ## returns void
+    def project_hyperedge(self, hyperedge, adj ):
 
         assert type( hyperedge) == frozenset, "_hyperedge is not a frozenset"
         _gen = combinations( hyperedge, 2)
