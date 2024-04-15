@@ -90,7 +90,6 @@ def get_alt_suff():
 def write_to_file(fname, data):
     filename   = strip_filename_suffix(fname)
     filesuffix = get_filename_suffix(fname)
-    print(f"fname {fname} \nfilename {filename} \nfilesuffix {filesuffix}\n") # DEBUG
     data    = data
     file    = str()
     tryname = str()

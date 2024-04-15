@@ -80,10 +80,20 @@ def run_forced(iterations) -> None:
     save_output()
 
 # saves the log to file
-def save_output():
+def save_output() -> None:
     global RECONSTRUCTORS, CURRENT, OUTPUT_LOCATION
     rec = RECONSTRUCTORS[CURRENT]
-    rec.output_to_log(OUTPUT_LOCATION + rec._filename_only + ".txt")
+    fn  = OUTPUT_LOCATION + rec._filename_only + ".txt"
+    rec.output_to_log(fn)
+    print(f"Saved to {fn}")
+    return
+
+def save_history() -> None:
+    global RECONSTRUCTORS, CURRENT, OUTPUT_LOCATION
+    rec = RECONSTRUCTORS[CURRENT]
+    fn  = OUTPUT_LOCATION + rec._filename_only + "_history" + ".txt"
+    rec.output_history_to_log(fn)
+    print(f"Saved to {fn}")
     return
 
 def help():

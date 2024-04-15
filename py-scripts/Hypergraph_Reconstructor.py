@@ -83,6 +83,7 @@ class Hypergraph_Reconstructor:
                                             # Every line after that is the size of the h-edge being added/removed with a + or - e.g. :   
                                             # 2 +
                                             # 5 -
+        self._history_num_arr        = [] # used for plotting
 
         self._log                    = [] # a list of types convertible to string, later exportable to a log file
 
@@ -120,8 +121,8 @@ class Hypergraph_Reconstructor:
         h_line = ""
         for i in range(self._maximal_hyperedge_size + 1):
             h_line += f"{_init_E.get(i, 0)} "
-        h_line += '\n'
         self._history.append(h_line)
+        self._history_num_arr.append([_init_E.get(i, 0) for i in range(self._maximal_hyperedge_size + 1)])
 
         self._stopping_arr  = [ 0 for i in range(0, self._maximal_hyperedge_size + 1) ]
         self._current_E_arr = [ 0 for i in range(0, self._maximal_hyperedge_size + 1) ]
@@ -378,7 +379,8 @@ class Hypergraph_Reconstructor:
                     else:
                         change_sign = "-"
                     break
-            self._history.append(str(change_i) + ' ' + change_sign + '\n' )
+            self._history.append(str(change_i) + ' ' + change_sign )
+            self._history_num_arr.append(_E_new)
 
         def add_to_log():
             lines = []
@@ -525,7 +527,11 @@ class Hypergraph_Reconstructor:
     def output_history_to_log(self, fname = None) -> None:
         if fname == None:
             fname = self._filename_only + "_history" + ".txt"
-        write_to_file(fname, self._history)
+        data_to_write = ""
+        for item in self._history:
+            data_to_write += str(item) + '\n'
+            
+        write_to_file(fname, data_to_write)
         return
     
     ##### auxilliary methods #####
