@@ -144,7 +144,6 @@ def convert_history_to_plot_array(filename, plot_arr) -> None:
     with open(filename, mode='rt', encoding="utf-8") as f:
 
         line  = f.readline()
-        #E     = [int(x) for x in line.split(' ')]
         E     = line.split(' ')
         for i in range(len(E)):
             if E[i].isnumeric():
@@ -154,19 +153,24 @@ def convert_history_to_plot_array(filename, plot_arr) -> None:
 
         plot_arr.append(E)
 
+        E_prev = E
         it   = 1
         line = f.readline()
         while(line):
+            line  = line[0:-1] # remove the newline char, it causes problems when checking the last element in the split string
             split = line.split(' ')
             n     = int(split[0])
             sign  = split[1]
+            E_n   = E_prev.copy()
             if   sign == '+':
-                E[it][n] += 1
+                E_n[n] += 1
             elif sign == '-':
-                E[it][n] -= 1
+                E_n[n] -= 1
             else:
-                raise Exception("erroneous data")
-            plot_arr.append[E]
+                raise Exception(f"erroneous data at line {it+1}")
+                return False
+            plot_arr.append(E_n)
+            E_prev = E_n
             it   += 1
             line  = f.readline()
     return True
