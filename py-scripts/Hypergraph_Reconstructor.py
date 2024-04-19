@@ -519,7 +519,7 @@ class Hypergraph_Reconstructor:
     # logging
     def output_to_log(self, fname = None) -> None:
         if fname == None:
-            fname = self._file_path + self._filename_only + ".txt"
+            fname = self._file_path + self._filename_only + "(log)" + ".txt"
         data_to_write = ""
         for item in self._log:
             data_to_write += str(item) + '\n'
@@ -532,7 +532,7 @@ class Hypergraph_Reconstructor:
     
     def output_history_to_log(self, fname = None) -> None:
         if fname == None:
-            fname = self._filename_only + "_history" + ".txt"
+            fname = self._file_path + self._filename_only + "(history)" + ".txt"
         data_to_write = ""
         for item in self._history:
             data_to_write += str(item) + '\n'

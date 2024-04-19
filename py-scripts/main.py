@@ -83,7 +83,7 @@ def run_forced(iterations) -> None:
 def save_output() -> None:
     global RECONSTRUCTORS, CURRENT, OUTPUT_LOCATION
     rec = RECONSTRUCTORS[CURRENT]
-    fn  = OUTPUT_LOCATION + rec._filename_only + ".txt"
+    fn  = OUTPUT_LOCATION + rec._filename_only + "(log)" + ".txt"
     rec.output_to_log(fn)
     print(f"Saved to {fn}")
     return
@@ -91,7 +91,7 @@ def save_output() -> None:
 def save_history() -> None:
     global RECONSTRUCTORS, CURRENT, OUTPUT_LOCATION
     rec = RECONSTRUCTORS[CURRENT]
-    fn  = OUTPUT_LOCATION + rec._filename_only + "_history" + ".txt"
+    fn  = OUTPUT_LOCATION + rec._filename_only + "(history)" + ".txt"
     rec.output_history_to_log(fn)
     print(f"Saved to {fn}")
     return

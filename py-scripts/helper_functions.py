@@ -69,11 +69,11 @@ def get_filename_suffix(fname, ch = None):
 def get_date_custom():
     # formatting listed at
     # https://docs.python.org/3/library/time.html#time.strftime
-    return strftime("-%Y%m%d-%H%M")
+    return strftime("(%Y%m%d-%H%M)")
 
 # with seconds at the end
 def get_date_custom_s():
-    return strftime("%Y%m%d-%H%M%S")
+    return strftime("(%Y%m%d-%H%M%S)")
 
 ### File handling
 #
@@ -87,7 +87,7 @@ def get_alt_suff():
     ALT_FILE_SUFFIX_NUMBER += 1
     return " (" + str(ALT_FILE_SUFFIX_NUMBER) + ")"
 #
-def write_to_file(fname, data):
+def write_to_file(fname, data) -> str:
     filename   = strip_filename_suffix(fname)
     filesuffix = get_filename_suffix(fname)
     data    = data
@@ -109,6 +109,7 @@ def write_to_file(fname, data):
     finally:
         file.write(data)
         file.close()
+        return tryname
 
 # converts a hypergraph object to text form
 def dict_fs_to_txt(dict_to_save) -> str:
