@@ -141,7 +141,8 @@ def read_dict_fs_to_var(filename, dict_var) -> bool:
             line = fr.readline()
     return True
 
-def convert_history_to_plot_array(filename, plot_arr) -> None:
+# Converts the iteration history to a plottable array and appends it to the input array variable
+def convert_history_to_plot_array(filename, plot_arr) -> bool:
     with open(filename, mode='rt', encoding="utf-8") as f:
 
         line  = f.readline()
