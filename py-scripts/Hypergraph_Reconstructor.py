@@ -384,8 +384,12 @@ class Hypergraph_Reconstructor:
                     else:
                         change_sign = "-"
                     break
+<<<<<<< Updated upstream
             self._history.append(str(change_i) + ' ' + change_sign )
             self._history_num_arr.append(_E_new)
+=======
+            self._history.append(str(change_i) + ' ' + change_sign + '\n' )
+>>>>>>> Stashed changes
 
         def add_to_log():
             lines = []
