@@ -541,6 +541,16 @@ class Hypergraph_Reconstructor:
         write_to_file(fname, data_to_write)
         return
     
+    def output_hypergraph_to_log(self, fname = None) -> None:
+        if fname == None:
+            fname = self._file_path + self._filename_only + "(h_graph)" + ".txt"
+        data_to_write = ""
+        data_to_write += self._filename_only + '\n'
+        data_to_write += dict_fs_to_txt(self._current_hypergraph)
+            
+        write_to_file(fname, data_to_write)
+        return
+    
     ##### auxilliary methods #####
 
     ## for use when the original graph loaded consists of unconnected subgraphs, this creates a new graph that finds the largest subgraph out of the original graph

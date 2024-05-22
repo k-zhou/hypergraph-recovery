@@ -96,6 +96,14 @@ def save_history() -> None:
     print(f"Saved to {fn}")
     return
 
+def save_hypergraph() -> None:
+    global RECONSTRUCTORS, CURRENT, OUTPUT_LOCATION
+    rec = RECONSTRUCTORS[CURRENT]
+    fn  = OUTPUT_LOCATION + rec._filename_only + "(h_graph)" + ".txt"
+    rec.output_hypergraph_to_log(fn)
+    print(f"Saved to {fn}")
+    return
+
 def help():
     print(f"FILE_LOADED, DATASET_LOCATION, OUTPUT_LOCATION, RECONSTRUCTORS, CURRENT")
     print(f"load_file(filename = None) ")
