@@ -14,8 +14,47 @@ from project_tests   import *
 import os
 from fnmatch         import fnmatch
 
-# global variables declared under main()
+# Running this file will call the main() function like an entrypoint as per convention familiar to C programs
+if __name__ == "__main__":
+    main()
+
+### Main ##########
+
+# plan:
+## load files from pre-determined source files folder
+
+## timestamp
+## run algorithm until h-edge count differences plateau
+## timestamp
+
+## output results to txt file, including
+##  runtime, initial and final h-graph h-edges count,
+
+def main():
+
+    # global variables 
+    global help
+    global FILE_LOADED, DATASET_LOCATION, OUTPUT_LOCATION, RECONSTRUCTORS, CURRENT
+    FILE_LOADED        = False
+    DATASET_LOCATION   = "../source-data/"
+    OUTPUT_LOCATION    = "../output/"
+    RECONSTRUCTORS     = []
+    CURRENT            = 0
+    #help               = help()
+
+    print("\n-- Hypergraph Reconstruction from Network Data --")
+    print(f"Taking datasets from the folder: \"{DATASET_LOCATION}\" \nModify global variable DATASET_LOCATION to change this.")
+    print(f"Outputting to folder: \"{OUTPUT_LOCATION}\" \nModify global variable OUTPUT_LOCATION to change this.")
+    print("> run load_file() to start")
+    print("> run load_all()  to load all .gt files in the dataset folder")
+    #hypergraph   = init_hypergraph(G_orig)
+    #graph_order  = len(list(G_orig.vertex_index))
+    #results      = None
+
+    return
+
 #
+
 def load_file(filename = None):
     global DATASET_LOCATION, RECONSTRUCTORS
     if filename == None:
@@ -110,43 +149,7 @@ def help():
     print(f"load_all() ")
     print(f"run_algorithm( max_iterations = None ) ")
 
-### Main ##########
-
-# plan:
-## load files from pre-determined source files folder
-
-## timestamp
-## run algorithm until h-edge count differences plateau
-## timestamp
-
-## output results to txt file, including
-##  runtime, initial and final h-graph h-edges count,
-
-def main():
-    global help
-    global FILE_LOADED, DATASET_LOCATION, OUTPUT_LOCATION, RECONSTRUCTORS, CURRENT
-    FILE_LOADED        = False
-    DATASET_LOCATION   = "../source-data/"
-    OUTPUT_LOCATION    = "../output/"
-    RECONSTRUCTORS     = []
-    CURRENT            = 0
-    #help               = help()
-
-    print("\n-- Hypergraph Reconstruction from Network Data --")
-    print(f"Taking datasets from the folder: \"{DATASET_LOCATION}\" \nModify global variable DATASET_LOCATION to change this.")
-    print(f"Outputting to folder: \"{OUTPUT_LOCATION}\" \nModify global variable OUTPUT_LOCATION to change this.")
-    print("> run load_file() to start")
-    print("> run load_all()  to load all .gt files in the dataset folder")
-    #hypergraph   = init_hypergraph(G_orig)
-    #graph_order  = len(list(G_orig.vertex_index))
-    #results      = None
-
-    return
-
-if __name__ == "__main__":
-    main()
 """
-
 # run the algorithm
 
 FILENAME = "../source_data/windsurfers.gt"
