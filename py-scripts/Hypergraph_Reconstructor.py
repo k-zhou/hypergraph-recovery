@@ -327,13 +327,19 @@ class Hypergraph_Reconstructor:
 
         ## ... and change the frequency of _sub_hyperedge. If its count is 0, increase by 1, else increase or decrease by 1 with 50% prob each
         #print(f"sub { _sub_hyperedge} : { _new_hypergraph.get( _sub_hyperedge, 0)}", end = '')
+        termQ = 1 # for checking { acceptance_rate }, pre-print eqn # 15
         if _new_hypergraph.get( _sub_hyperedge, 0) < 1:
             _new_hypergraph[ _sub_hyperedge] = 1
+            termQ = 0.5
         else:
             if random.random() < 0.5:
                 _new_hypergraph[ _sub_hyperedge] += 1
             else:
                 _new_hypergraph[ _sub_hyperedge] -= 1
+            if _new_hypergraph.get( _sub_hyperedge, 0) == 0:
+                termQ = 2
+            else:
+                termQ = 1
         # if it's now 0, clean up
         if _new_hypergraph[ _sub_hyperedge] < 1:
             #print(f"new len {len( _new_hypergraph)} -> ", end = '')
@@ -347,10 +353,11 @@ class Hypergraph_Reconstructor:
 
         acceptance_rate = 1
         for k in range(2, _L+1):
+            # termQ  declared earlier
             term1 = factorial_div_factorial( _E_new[k], self._E_current[k])
             term2 = self._Z_current[k] / _Z_new[k]
             term3 = pow( (comb( _N, k) * (1/ self._mu) +1), self._E_current[k] - _E_new[k])
-            prod  = term1 * term2 * term3
+            prod  = termQ * term1 * term2 * term3
             acceptance_rate *= prod
             #print(f"{prod} ", end = '') # debug
 
