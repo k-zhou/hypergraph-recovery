@@ -1,5 +1,5 @@
 
-from           math import comb, pow, factorial
+from           math import comb, pow, factorial, ceil
 from graph_tool.all import *
 from      itertools import combinations
 from           time import time_ns, sleep
@@ -70,10 +70,10 @@ class Hypergraph_Reconstructor:
         self._stopping_sum           = 0
         self._auto_stopped           = False
         # stats
-        self._print_period           = 10 # used to control printing to console only periodically
+        self._print_period           = 1 # used to control printing to console only periodically
         if not print_period == None:
             self._print_period = print_period
-        self._periodic_print         = self._print_period
+        self._print_clock         = self._print_period
         self._iteration              = 0
         self._runtime                = 0 # runtime of the algorithm in ns
         self._hypergraph_initiated   = 0
@@ -91,7 +91,7 @@ class Hypergraph_Reconstructor:
         self._log                    = [] # a list of types convertible to string, later exportable to a log file
 
         self._log.append(self._filename_pathless)
-        print(f"File: {self._filename}\n") #Print period {self._print_period}")
+        #print(f"File: {self._filename}\n") #Print period {self._print_period}")
 
     ##########################
 
@@ -279,6 +279,9 @@ class Hypergraph_Reconstructor:
         if len(self._current_hypergraph) == 0:
             raise Exception("Error: hypergraph size 0... Have you initialized the hypergraph?")
             #return (False, hypergraph, self.get_Prob_H( hypergraph)[0] )
+        
+        # variables to display status
+        start_time = time_ns()
 
         ## Find maximal hyperedge
         _new_hypergraph = self._current_hypergraph.copy()
@@ -395,29 +398,33 @@ class Hypergraph_Reconstructor:
             self._history.append(str(change_i) + ' ' + change_sign )
             self._history_num_arr.append(_E_new)
 
-        def add_to_log():
+        def add_to_log(extra_str_data = ""):
             lines = []
-            lines.append(f"Iteration {self._iteration} New: {str(_E_new)} diff:{str([ (_E_new[i] - self._E_current[i]) for i in range(len(_E_new))])}" )
+            lines.append(f"Iteration {self._iteration} New: {str(_E_new)} diff:{str([ (_E_new[i] - self._E_current[i]) for i in range(len(_E_new))])}" + extra_str_data )
             for line in lines:
                 self._log.append(line)
 
         ## check acceptance. If heads, record the change, otherwise keep the previous hypergraph
         if _projects_to_graph and _cointoss:
-            if self._periodic_print == 0:
+            if self._print_clock == 0:
+                # Dynamically changes the printing interval to print the status at most once every 3 seconds
+                iteration_runtime = time_ns() - start_time
+                self._print_clock = ceil(3000000000 / iteration_runtime)
                 #print_progress()
-                add_to_log()
-                self._periodic_print = self._print_period
-            self._periodic_print -= 1
+                add_to_log(f" ; {iteration_runtime} ns elapsed this iteration.")
+                
+            self._print_clock -= 1
 
             add_to_history()
 
-            # auto-stop
+            # data for auto-stop
             diff_arr            = [ _E_new[i] - self._current_E_arr[i] for i in range(0, len( _E_new)) ]
             for i in range(0, len(diff_arr)):
                 e_size = diff_arr[i]
                 if not e_size == 0:
                     self._diff_E = (e_size, i)
                     break
+            
             self._current_E_arr = _E_new
             ( self._P_H_current, self._E_current, self._Z_current) = ( _P_H_new, _E_new, _Z_new)
             return (True, _new_hypergraph, _P_H_new)
