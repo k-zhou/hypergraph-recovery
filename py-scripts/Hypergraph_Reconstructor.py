@@ -495,7 +495,16 @@ class Hypergraph_Reconstructor:
                 # fold_sum = 0
                 # for E_k in self._stopping_arr:
                 #     fold_sum += E_k
-                fold_sum = self._stopping_sum # simpler alternate solution
+                ##fold_sum = self._stopping_sum # simpler alternate solution
+
+                fold_sum = self._stopping_arr[2] # 2024.06.27 Observation: 
+                # A change in the tally of k-sized hyperedges can be matched by an 
+                # equivalent but negative change in the tally of l-sized hyperedges.
+                # Fold-summing these changes together might activate the 
+                # auto-stop scheme even though a local optimum has not yet been reached.
+                # For this reason a change to using only 2-edges is implemented, - despite
+                # even this is also only an approximation to detecting reaching local optima.
+
                 # auto-stop the algorithm
                 if _autostop and i >= _min_iterations:
                     if -5 < fold_sum and fold_sum < 5:
