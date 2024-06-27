@@ -404,17 +404,7 @@ class Hypergraph_Reconstructor:
 
         ## check acceptance. If heads, record the change, otherwise keep the previous hypergraph
         if _projects_to_graph and _cointoss:
-            # Dynamically changes the printing interval to print the status at most once every 3 seconds
-            t = time_ns()
-            if t - self._print_clock > 3000000000:
-                iteration_runtime = t - start_time
-                self._print_clock = t
-                s = f"Iteration {self._iteration} New: {str(_E_new)} diff:{str([ (_E_new[i] - self._E_current[i]) for i in range(len(_E_new))])} ; {iteration_runtime} ns elapsed this iteration."
-                print(s)
-                add_to_log(s)
-
-            add_to_history()
-
+            
             # data for auto-stop
             diff_arr            = [ _E_new[i] - self._current_E_arr[i] for i in range(0, len( _E_new)) ]
             for i in range(0, len(diff_arr)):
@@ -422,6 +412,17 @@ class Hypergraph_Reconstructor:
                 if not e_size == 0:
                     self._diff_E = (e_size, i)
                     break
+
+            # Dynamically changes the printing interval to print the status at most once every 3 seconds
+            t = time_ns()
+            if t - self._print_clock > 3000000000:
+                iteration_runtime = t - start_time
+                self._print_clock = t
+                s = f"Iteration {self._iteration} New: {str(_E_new)} diff:{str(self._diff_E)} Auto-stop state: {self._stopping_arr}; {iteration_runtime} ns elapsed until this iteration."
+                print(s)
+                add_to_log(s)
+
+            add_to_history()
             
             self._current_E_arr = _E_new
             ( self._P_H_current, self._E_current, self._Z_current) = ( _P_H_new, _E_new, _Z_new)
@@ -431,7 +432,7 @@ class Hypergraph_Reconstructor:
 
     ## main algorithm version 2
     ## use this method to run the algorithm for a set amount of iterations
-    def run_algorithm(self, iterations = None, autostop = None, min_iterations = None):
+    def run_algorithm(self, iterations = 100, autostop = True, min_iterations = None):
 
         ## needs init_hypergraph() to be run first, otherwise will create unexpected behaviour
         if self._hypergraph_initiated != 1:
@@ -442,13 +443,9 @@ class Hypergraph_Reconstructor:
         _result          = self.get_Prob_H( self._current_hypergraph)
         for val in _result[0]: pass
         _best_hyperprior = val
-        _ITERATIONS      = 100
-        if not iterations == None:
-            assert type( iterations) == int and iterations > 0, "run_algorithm() error: iterations input"
-            _ITERATIONS   = iterations
-        _autostop        = True
-        if not autostop == None:
-            _autostop = bool(autostop)
+        assert type( iterations) == int and iterations > 0, "run_algorithm() error: iterations input"
+        _ITERATIONS   = iterations
+        _autostop = bool(autostop)
         _min_iterations   = self._rw_size*2
         if not min_iterations == None:
             _min_iterations = int(min_iterations)
