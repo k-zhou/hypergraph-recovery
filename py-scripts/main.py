@@ -14,19 +14,10 @@ from project_tests   import *
 import os
 from fnmatch         import fnmatch
 
-# Running this file will call the main() function like an entrypoint as per convention familiar to C programs
-if __name__ == "__main__":
-    main()
-
 ### Main ##########
 
 # plan:
 ## load files from pre-determined source files folder
-
-## timestamp
-## run algorithm until h-edge count differences plateau
-## timestamp
-
 ## output results to txt file, including
 ##  runtime, initial and final h-graph h-edges count,
 
@@ -148,6 +139,10 @@ def help():
     print(f"load_file(filename = None) ")
     print(f"load_all() ")
     print(f"run_algorithm( max_iterations = None ) ")
+
+# Running this file will call the main() function like an entrypoint as per convention familiar to C programs
+if __name__ == "__main__":
+    main()
 
 """
 # run the algorithm
