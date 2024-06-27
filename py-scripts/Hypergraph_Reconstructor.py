@@ -18,7 +18,7 @@ from helper_functions import *
 ### Find best hypergraph ########################
 class Hypergraph_Reconstructor:
 
-    def __init__(self, filename, print_period = None):
+    def __init__(self, filename, print_period = 1):
 
         self._filename = filename
         try:
@@ -70,10 +70,8 @@ class Hypergraph_Reconstructor:
         self._stopping_sum           = 0
         self._auto_stopped           = False
         # stats
-        self._print_period           = 1 # used to control printing to console only periodically
-        if not print_period == None:
-            self._print_period = print_period
-        self._print_clock         = self._print_period
+        self._print_period           = print_period # used to control printing to console only periodically, static
+        self._print_clock            = time_ns()
         self._iteration              = 0
         self._runtime                = 0 # runtime of the algorithm in ns
         self._hypergraph_initiated   = 0
@@ -398,22 +396,22 @@ class Hypergraph_Reconstructor:
             self._history.append(str(change_i) + ' ' + change_sign )
             self._history_num_arr.append(_E_new)
 
-        def add_to_log(extra_str_data = ""):
+        def add_to_log(str_data = ""):
             lines = []
-            lines.append(f"Iteration {self._iteration} New: {str(_E_new)} diff:{str([ (_E_new[i] - self._E_current[i]) for i in range(len(_E_new))])}" + extra_str_data )
+            lines.append(str_data )
             for line in lines:
                 self._log.append(line)
 
         ## check acceptance. If heads, record the change, otherwise keep the previous hypergraph
         if _projects_to_graph and _cointoss:
-            if self._print_clock == 0:
-                # Dynamically changes the printing interval to print the status at most once every 3 seconds
-                iteration_runtime = time_ns() - start_time
-                self._print_clock = ceil(3000000000 / iteration_runtime)
-                #print_progress()
-                add_to_log(f" ; {iteration_runtime} ns elapsed this iteration.")
-                
-            self._print_clock -= 1
+            # Dynamically changes the printing interval to print the status at most once every 3 seconds
+            t = time_ns()
+            if t - self._print_clock > 3000000000:
+                iteration_runtime = t - start_time
+                self._print_clock = t
+                s = f"Iteration {self._iteration} New: {str(_E_new)} diff:{str([ (_E_new[i] - self._E_current[i]) for i in range(len(_E_new))])} ; {iteration_runtime} ns elapsed this iteration."
+                print(s)
+                add_to_log(s)
 
             add_to_history()
 
