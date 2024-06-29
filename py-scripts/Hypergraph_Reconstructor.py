@@ -89,7 +89,7 @@ class Hypergraph_Reconstructor:
         self._log                    = [] # a list of types convertible to string, later exportable to a log file
 
         self._log.append(self._filename_pathless)
-        #print(f"File: {self._filename}\n") #Print period {self._print_period}")
+        print(f"\tFile: {self._filename}") #Print period {self._print_period}")
 
     ##########################
 
@@ -440,12 +440,14 @@ class Hypergraph_Reconstructor:
             self.init_hypergraph()
             self.status()
 
+        failure_autostop_threshold = 100 # activates after failing this many attempts at accepting a candidate h-graph # TODO: Arbitrary
+
         _result          = self.get_Prob_H( self._current_hypergraph)
         for val in _result[0]: pass
         _best_hyperprior = val
         assert type( iterations) == int and iterations > 0, "run_algorithm() error: iterations input"
         _ITERATIONS   = iterations
-        _autostop = bool(autostop)
+        _autostop_enabled = bool(autostop)
         _min_iterations   = self._rw_size*2
         if not min_iterations == None:
             _min_iterations = int(min_iterations)
@@ -455,12 +457,22 @@ class Hypergraph_Reconstructor:
         #self._P_G_arr = [ ( _best_hypergraph, _best_hyperprior) ]
         #self._P_G     = 0
 
+        def autostop():
+            self._auto_stopped = True
+            s = f"Auto-stopped algorithm at {self._iteration}th iteration\n"
+            print(s, end='')
+            self._log.append(s)
+        
         ### run for a set amount of iterations
-        start_time = time_ns()
+        
         i = 0
+        failed_attempts = 0
+        start_time = last_successful_it_time = time_ns()
         while i < _ITERATIONS:
             out = self.find_candidate_hypergraph()
             if out[0]:
+                last_successful_it_time  = time_ns()
+                failed_attempts          = 0
                 _current_hypergraph      = out[1]
                 gen                      = out[2]
                 for val in gen: pass
@@ -476,37 +488,40 @@ class Hypergraph_Reconstructor:
                 # Auto-stopping
                 tup  = self._rolling_window[self._rw_index]
                 self._stopping_arr[tup[1]] -= tup[0]
-                self._stopping_sum -= tup[0] # simpler alternate solution, can use instead of folding sum
 
                 tup  = self._diff_E
                 self._rolling_window[self._rw_index] = tup
                 self._stopping_arr[tup[1]] += tup[0]
-                self._stopping_sum += tup[0] # simpler alternate solution
 
                 self._rw_index += 1
                 if self._rw_index >= self._rw_size:
                     self._rw_index = 0
-                
-                # fold_sum = 0
-                # for E_k in self._stopping_arr:
-                #     fold_sum += E_k
-                ##fold_sum = self._stopping_sum # simpler alternate solution
 
-                fold_sum = self._stopping_arr[2] # 2024.06.27 Observation: 
+                # 2024.06.27 Observation: 
                 # A change in the tally of k-sized hyperedges can be matched by an 
                 # equivalent but negative change in the tally of l-sized hyperedges.
                 # Fold-summing these changes together might activate the 
                 # auto-stop scheme even though a local optimum has not yet been reached.
-                # For this reason a change to using only 2-edges is implemented, - despite
-                # even this is also only an approximation to detecting reaching local optima.
-
+                # For this reason a change is implemented, now it checks all sizes to 
+                # lie within the bounds
+                # - despite even this is also only an approximation to detecting reaching local optima.
+                
+                within_bounds = True
+                for tally in self._stopping_arr:
+                    if not (-2 < tally and tally < 2):
+                        within_bounds = False
+                        break
+                
                 # auto-stop the algorithm
-                if _autostop and i >= _min_iterations:
-                    if -5 < fold_sum and fold_sum < 5:
-                        self._auto_stopped = True
-                        i = _ITERATIONS
-                        print(f"Auto-stopping algorithm at {self._iteration}th iteration; {fold_sum}")
-                        self._log.append(f"Auto-stopped algorithm at {self._iteration}th iteration\n")
+                if _autostop_enabled and i >= _min_iterations and within_bounds:
+                    autostop()
+                    break
+            else:
+                failed_attempts         += 1
+                if failed_attempts > failure_autostop_threshold:
+                    autostop()
+                    print(f"... due to {failed_attempts} failed attempts after {time_ns() - last_successful_it_time} ns.")
+                    break
 
 
         end_time   = time_ns()
