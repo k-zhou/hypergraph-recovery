@@ -415,9 +415,8 @@ class Hypergraph_Reconstructor:
 
             # Dynamically changes the printing interval to print the status at most once every 3 seconds
             t = time_ns()
-            if t - self._print_clock > 3000000000:
-                iteration_runtime = t - start_time
-                self._print_clock = t
+            iteration_runtime = t - start_time
+            if iteration_runtime > 3000000000:
                 s = f"Iteration {self._iteration} New: {str(_E_new)} diff:{str(self._diff_E)} Auto-stop state: {self._stopping_arr}; {iteration_runtime} ns elapsed until this iteration."
                 print(s)
                 add_to_log(s)
