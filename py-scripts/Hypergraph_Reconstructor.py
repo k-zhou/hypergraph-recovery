@@ -456,11 +456,11 @@ class Hypergraph_Reconstructor:
         #self._P_G_arr = [ ( _best_hypergraph, _best_hyperprior) ]
         #self._P_G     = 0
 
-        def autostop():
+        def autostop(additional_text = ""):
             self._auto_stopped = True
-            s = f"Auto-stopped algorithm at {self._iteration}th iteration\n"
-            print(s, end='')
-            self._log.append(s)
+            s = f"Auto-stopped algorithm at {self._iteration}th iteration.\n"
+            print(s + additional_text)
+            self._log.append(s + additional_text + '\n')
         
         ### run for a set amount of iterations
         
@@ -517,9 +517,11 @@ class Hypergraph_Reconstructor:
                     break
             else:
                 failed_attempts         += 1
-                if failed_attempts > failure_autostop_threshold:
-                    autostop()
-                    print(f"... due to {failed_attempts} failed attempts after {time_ns() - last_successful_it_time} ns.")
+                if time_ns() - last_successful_it_time > 60000000000:
+                # if failed_attempts > failure_autostop_threshold:
+                    s = f"[!] ... due to {failed_attempts} failed attempts after {time_ns() - last_successful_it_time} ns."
+                    autostop(s)
+                    print(s)
                     break
 
 
