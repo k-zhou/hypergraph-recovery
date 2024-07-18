@@ -1,5 +1,6 @@
 
 from           math import comb, pow, factorial, ceil
+from     statistics import stdev
 from graph_tool.all import *
 from      itertools import combinations
 from           time import time_ns, sleep
@@ -69,7 +70,10 @@ class Hypergraph_Reconstructor:
         self._rw_index               = 0
         self._stopping_sum           = 0
         self._auto_stopped           = False
-        # stats
+        # Runtime-based auto-stop, used for big graphs taking longer than a few seconds per accepted iteration change
+        self._iter_runtimes          = []
+        self._iter_runtimes_summed   = [0]
+        # keeping running stats
         self._print_period           = print_period # used to control printing to console only periodically, static
         self._print_clock            = time_ns()
         self._iteration              = 0
@@ -343,11 +347,7 @@ class Hypergraph_Reconstructor:
                 termQ = 1
         # if it's now 0, clean up
         if _new_hypergraph[ _sub_hyperedge] < 1:
-            #print(f"new len {len( _new_hypergraph)} -> ", end = '')
             _new_hypergraph.pop( _sub_hyperedge)
-            #print(f"{len( _new_hypergraph)}")
-
-        #print(f" -> { _new_hypergraph.get( _sub_hyperedge, 0)}")
 
         ## calculate the hyperprior P(H) and compare to previous
         ( _P_H_new, _E_new, _Z_new) = self.get_Prob_H( _new_hypergraph)
@@ -397,7 +397,7 @@ class Hypergraph_Reconstructor:
             self._history_num_arr.append(_E_new)
 
         def add_to_log(str_data = ""):
-            lines = []
+            lines = [] # a remnant ?
             lines.append(str_data )
             for line in lines:
                 self._log.append(line)
@@ -413,8 +413,8 @@ class Hypergraph_Reconstructor:
                     self._diff_E = (e_size, i)
                     break
 
-            # Dynamically changes the printing interval to print the status at most once every 3 seconds
-            t = time_ns()
+            # Print the status at most once every 3 seconds and also save to output logs
+            t = time_ns() # note to self: this is called twice, once here within the find-candidate and once immediately after find-candidate has been called; could somehow combine these at a later time
             iteration_runtime = t - start_time
             if iteration_runtime > 3000000000:
                 s = f"Iteration {self._iteration} New: {str(_E_new)} diff:{str(self._diff_E)} Auto-stop state: {self._stopping_arr}; {iteration_runtime} ns elapsed until this iteration."
@@ -458,19 +458,23 @@ class Hypergraph_Reconstructor:
 
         def autostop(additional_text = ""):
             self._auto_stopped = True
-            s = f"Auto-stopped algorithm at {self._iteration}th iteration.\n"
+            s                  = f"Auto-stopped algorithm at {self._iteration}th iteration.\n"
             print(s + additional_text)
             self._log.append(s + additional_text + '\n')
         
         ### run for a set amount of iterations
         
-        i = 0
+        i               = 0
         failed_attempts = 0
-        start_time = last_successful_it_time = time_ns()
+        start_time      = last_successful_it_time = time_ns()
         while i < _ITERATIONS:
-            out = self.find_candidate_hypergraph()
+            out            = self.find_candidate_hypergraph()
+            t              = time_ns()
+            iteration_runtime = t - last_successful_it_time
             if out[0]:
-                last_successful_it_time  = time_ns()
+                self._iter_runtimes.append(iteration_runtime)
+                self._iter_runtimes_summed.append(iteration_runtime + self._iter_runtimes_summed[-1])
+                last_successful_it_time  = t
                 failed_attempts          = 0
                 _current_hypergraph      = out[1]
                 gen                      = out[2]
@@ -481,10 +485,11 @@ class Hypergraph_Reconstructor:
                 self._best_hyperprior    = val
                 #self._P_G_arr.append( ( _best_hypergraph, _best_hyperprior))
                 self._P_G               += val
-                i               += 1
-                self._iteration += 1
+                
+                i                       += 1
+                self._iteration         += 1
 
-                # Auto-stopping
+                ## Auto-stopping
                 tup  = self._rolling_window[self._rw_index]
                 self._stopping_arr[tup[1]] -= tup[0]
 
@@ -492,18 +497,18 @@ class Hypergraph_Reconstructor:
                 self._rolling_window[self._rw_index] = tup
                 self._stopping_arr[tup[1]] += tup[0]
 
-                self._rw_index += 1
+                self._rw_index          += 1
                 if self._rw_index >= self._rw_size:
                     self._rw_index = 0
 
-                # 2024.06.27 Observation: 
-                # A change in the tally of k-sized hyperedges can be matched by an 
-                # equivalent but negative change in the tally of l-sized hyperedges.
-                # Fold-summing these changes together might activate the 
-                # auto-stop scheme even though a local optimum has not yet been reached.
-                # For this reason a change is implemented, now it checks all sizes to 
-                # lie within the bounds
-                # - despite even this is also only an approximation to detecting reaching local optima.
+                ## 2024.06.27 Observation: 
+                ## A change in the tally of k-sized hyperedges can be matched by an 
+                ## equivalent but negative change in the tally of l-sized hyperedges.
+                ## Fold-summing these changes together might activate the 
+                ## auto-stop scheme even though a local optimum has not yet been reached.
+                ## For this reason a change is implemented, now it checks all sizes to 
+                ## lie within the bounds
+                ## - despite even this is also only an approximation to detecting reaching local optima.
                 
                 within_bounds = True
                 for tally in self._stopping_arr:
@@ -511,18 +516,23 @@ class Hypergraph_Reconstructor:
                         within_bounds = False
                         break
                 
-                # auto-stop the algorithm
+                ## auto-stop the algorithm
                 if _autostop_enabled and i >= _min_iterations and within_bounds:
                     autostop()
                     break
             else:
                 failed_attempts         += 1
-                if time_ns() - last_successful_it_time > 60000000000:
+                ## auto-stop based on runtime
+                if self._iteration > 10:
+                    mean                     = self._iter_runtimes_summed[self._iteration] / self._iteration
+                    sd                       = stdev(self._iter_runtimes, mean)
+                    if iteration_runtime > mean + 2*sd:
+                # if time_ns() - last_successful_it_time > 60000000000:
                 # if failed_attempts > failure_autostop_threshold:
-                    s = f"[!] ... due to {failed_attempts} failed attempts after {time_ns() - last_successful_it_time} ns."
-                    autostop(s)
-                    print(s)
-                    break
+                        s = f"[!] ... due to {failed_attempts} failed attempts after {iteration_runtime} ns with sample mean {mean} and stdeviation {sd}"
+                        autostop(s)
+                        print(s)
+                        break
 
 
         end_time   = time_ns()
