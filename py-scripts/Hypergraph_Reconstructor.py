@@ -4,20 +4,26 @@ from     statistics import stdev
 from graph_tool.all import *
 from      itertools import combinations
 from           time import time_ns, sleep
+from             os import cpu_count
 import       random
-import        numpy as     np
+#import        numpy     as np
+import multiprocessing  as mp
+#import multiprocessing.sharedctypes
+from         ctypes import Structure, c_bool, c_int
+
 
 from helper_functions import *
 
-# -> how to iterate through a python set?
-#   <- convert to list
 # graph  size: number of edges
 # graph order: number of vertices
-
 # How to program an automatic detection for reaching an equilibrium that only fluctuates little?
+############### Helpers #################
 
-### Find best hypergraph ########################
+################ Main ################
 class Hypergraph_Reconstructor:
+
+    def init_hypergraph(self) -> None:
+        pass
 
     def __init__(self, filename, print_period = 1):
 
@@ -30,6 +36,14 @@ class Hypergraph_Reconstructor:
         self._file_path              = strip_filename_suffix(self._filename, '/') + '/'
         self._filename_only          = strip_filename_suffix(self._filename_pathless)
 
+        # Multi-core searching
+        self._cores                  = cpu_count()
+        if cores == None: cores = 1
+        self._manager                = mp.Manager()
+        self._it_outputs             = 0 # redefined when init_hypergraph is called
+        self._workers                 = [mp.Process(target=self.find_candidate_hypergraph, args=[i]) for i in range(self._cores)]
+
+        #
         self._adj_graph              = self.get_adjacency_from_Graph(self._g) # adjacency list as a dict( frozensets) -> Z+
         self._graph_edges_total      = self._g.num_edges()
         self._graph_order            = self._g.num_vertices()
@@ -37,7 +51,7 @@ class Hypergraph_Reconstructor:
         self._mu                     = 1  # equation (11), to be determined later
         self._epsilon                = pow(10, -6) # cutoff point for miniscule prob calculations
 
-        self._current_hypergraph     = dict()
+        self._current_hypergraph     = self._manager.dict() # datatype: frozensets of uints (these themselves mappable to graph_tool.Vertices), maps to Z+
         #self._best_hypergraph        = self._current_hypergraph
         self._best_hyperprior        = 1
         self._P_G_arr                = [] # mostly unused, holds tuples of (hypergraph, hyperprior (Int))
@@ -70,9 +84,12 @@ class Hypergraph_Reconstructor:
         self._rw_index               = 0
         self._stopping_sum           = 0
         self._auto_stopped           = False
+
         # Runtime-based auto-stop, used for big graphs taking longer than a few seconds per accepted iteration change
+        # this uses probability- and normal distribution -based stopping
         self._iter_runtimes          = []
         self._iter_runtimes_summed   = [0]
+
         # keeping running stats
         self._print_period           = print_period # used to control printing to console only periodically, static
         self._print_clock            = time_ns()
@@ -94,6 +111,7 @@ class Hypergraph_Reconstructor:
 
         self._log.append(self._filename_pathless)
         print(f"\tFile: {self._filename}") #Print period {self._print_period}")
+        self.init_hypergraph()
 
     ##########################
 
@@ -104,8 +122,7 @@ class Hypergraph_Reconstructor:
     # Sets (or resets) the current hypergraph using some initialisation method on the original graph
     def init_hypergraph(self) -> None:
 
-        self._current_hypergraph = dict() # datatype: dict of frozensets of uints (mappable to graph_tool.Vertices), maps to Z+
-        _init_E = dict() # Keeps track of the count of all h-edges sized n in the initial state, refer to self._history
+        _init_E                  = dict() # Keeps track of the count of all h-edges sized n in the initial state, refer to self._history
         current_E_arr_wip        = [] # use as linked list, collect all the hyperedges as their size here for the zeroth iteration
 
         ### Current methodology: Adds all maximal cliques as hyperedges to the hypergraph.
@@ -123,16 +140,21 @@ class Hypergraph_Reconstructor:
             # also fill in the first row of self._history
             _init_E[_edge_size] = _init_E.get(_edge_size, 0) + 1
         # continues ...
+        # logs the initial state in the text file
         h_line = ""
         for i in range(self._maximal_hyperedge_size + 1):
             h_line += f"{_init_E.get(i, 0)} "
         self._history.append(h_line)
         self._history_num_arr.append([_init_E.get(i, 0) for i in range(self._maximal_hyperedge_size + 1)])
-
+        # inits the stopping algorithm based on the moving window
         self._stopping_arr  = [ 0 for i in range(0, self._maximal_hyperedge_size + 1) ]
         self._current_E_arr = [ 0 for i in range(0, self._maximal_hyperedge_size + 1) ]
         for e_size in current_E_arr_wip:
             self._current_E_arr[e_size] += 1 #
+        # defines the inner class and inits the results array
+        class HGraph_Recon_it_result(Structure):
+            _fields_ = [("success", c_bool), ("hyperedge", c_int * self._maximal_hyperedge_size), ("count", c_int)]
+        self._it_outputs = mp.sharedctypes.Array(HGraph_Recon_it_result, [HGraph_Recon_it_result for i in range(self._cores)], lock=False)
 
         ### Alternative methods include random init, edge init, or empty (page 6, last paragraph before section [D] )
         #
@@ -140,6 +162,7 @@ class Hypergraph_Reconstructor:
         ( self._P_H_current, self._E_current, self._Z_current) = self.get_Prob_H( self._current_hypergraph)
         
         self._hypergraph_initiated = 1
+        print("Initialised hypergraph.")
 
         return
 
