@@ -9,7 +9,7 @@ import       random
 #import        numpy     as np
 import multiprocessing  as mp
 #import multiprocessing.sharedctypes
-from         ctypes import Structure, c_bool, c_int
+from         ctypes import Structure, c_bool, c_int, c_float
 
 
 from helper_functions import *
@@ -41,8 +41,11 @@ class Hypergraph_Reconstructor:
         if cores == None: cores = 1
         self._manager                = mp.Manager()
         self._it_outputs             = 0 # redefined when init_hypergraph is called
-        self._workers                 = [mp.Process(target=self.find_candidate_hypergraph, args=[i]) for i in range(self._cores)]
-
+        self._workers                = [mp.Process(target=self.find_candidate_hypergraph, args=[i]) for i in range(self._cores)]
+        self._P_H_new_list           = self._manager.list([ 0 for i in range(self._cores)])
+        self._E_new_list             = self._manager.list([[] for i in range(self._cores)])
+        self._Z_new_list             = self._manager.list([[] for i in range(self._cores)])
+        #self._hypergraph_new_list    = self._manager.list([dict() for i in range(self._cores)])
         #
         self._adj_graph              = self.get_adjacency_from_Graph(self._g) # adjacency list as a dict( frozensets) -> Z+
         self._graph_edges_total      = self._g.num_edges()
@@ -296,7 +299,7 @@ class Hypergraph_Reconstructor:
      # Bool is True when the hypergraph is different from the input
      #
      # float is the hyperprior of the hypergraph
-    def find_candidate_hypergraph(self):
+    def find_candidate_hypergraph(self, i=0) -> bool:
 
         _N  = self._graph_order
         _L  = self._maximal_hyperedge_size
@@ -342,6 +345,8 @@ class Hypergraph_Reconstructor:
                 k = len(mq)
 
         ## select a random sub-hyperedge within this hyperedge (can select itself) ...
+        _sub_hyperedge = frozenset()  # Pass these two variables
+        _count         = 0            # forwards to the results
         l = 1
         if k > 1:
             l = random.randint( 2, k)
@@ -369,7 +374,8 @@ class Hypergraph_Reconstructor:
             else:
                 termQ = 1
         # if it's now 0, clean up
-        if _new_hypergraph[ _sub_hyperedge] < 1:
+        _count = _new_hypergraph[ _sub_hyperedge]
+        if _count < 1:
             _new_hypergraph.pop( _sub_hyperedge)
 
         ## calculate the hyperprior P(H) and compare to previous
@@ -447,10 +453,15 @@ class Hypergraph_Reconstructor:
             add_to_history()
             
             self._current_E_arr = _E_new
-            ( self._P_H_current, self._E_current, self._Z_current) = ( _P_H_new, _E_new, _Z_new)
-            return (True, _new_hypergraph, _P_H_new)
+            ( self._P_H_new_list[i], self._E_new_list[i], self._Z_new_list[i]) = ( _P_H_new, _E_new, _Z_new)
+
+            self._it_outputs[i].success   = True
+            self._it_outputs[i].hyperedge = _sub_hyperedge
+            self._it_outputs[i].count     = _count
+            return True
         else:
-            return (False, self._current_hypergraph, self._P_H_current)
+            self._it_outputs[i].success   = False
+            return False
 
     ## main algorithm version 2
     ## use this method to run the algorithm for a set amount of iterations
