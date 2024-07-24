@@ -1,4 +1,4 @@
-
+ 
 from           math import comb, pow, factorial, ceil
 from     statistics import stdev
 from graph_tool.all import *
@@ -8,7 +8,7 @@ from             os import cpu_count
 import       random
 #import        numpy     as np
 import multiprocessing  as mp
-#import multiprocessing.sharedctypes
+import multiprocessing.sharedctypes
 from         ctypes import Structure, c_bool, c_int, c_float
 
 
@@ -38,15 +38,20 @@ class Hypergraph_Reconstructor:
 
         # Multi-core searching
         self._cores                  = cpu_count()
-        if cores == None: cores = 1
+        if self._cores == None: self._cores = 1
         self._manager                = mp.Manager()
         self._it_outputs             = 0 # redefined when init_hypergraph is called
-        self._workers                = [mp.Process(target=self.find_candidate_hypergraph, args=[i]) for i in range(self._cores)]
+        self._it_pass_data           = self._manager.dict()
+        self._it_hyperedge_change    = self._manager.dict() # contains the change to be added/updated to the current hypergraph
+        self._it_found_change        = mp.sharedctypes.Value(c_bool, False)
+        self._it_finder              = mp.sharedctypes.Value(c_int, -1)
+        self._workers                = [mp.Process(target=self.find_candidate_hypergraph, args=[i, self._it_pass_data]) for i in range(self._cores)]
         self._P_H_new_list           = self._manager.list([ 0 for i in range(self._cores)])
         self._E_new_list             = self._manager.list([[] for i in range(self._cores)])
         self._Z_new_list             = self._manager.list([[] for i in range(self._cores)])
         #self._hypergraph_new_list    = self._manager.list([dict() for i in range(self._cores)])
         #
+        
         self._adj_graph              = self.get_adjacency_from_Graph(self._g) # adjacency list as a dict( frozensets) -> Z+
         self._graph_edges_total      = self._g.num_edges()
         self._graph_order            = self._g.num_vertices()
@@ -56,7 +61,7 @@ class Hypergraph_Reconstructor:
 
         self._current_hypergraph     = self._manager.dict() # datatype: frozensets of uints (these themselves mappable to graph_tool.Vertices), maps to Z+
         #self._best_hypergraph        = self._current_hypergraph
-        self._best_hyperprior        = 1
+        #self._best_hyperprior        = 1
         self._P_G_arr                = [] # mostly unused, holds tuples of (hypergraph, hyperprior (Int))
         self._P_G                    = 1
         self._P_H_current            = 0
@@ -157,7 +162,7 @@ class Hypergraph_Reconstructor:
         # defines the inner class and inits the results array
         class HGraph_Recon_it_result(Structure):
             _fields_ = [("success", c_bool), ("hyperedge", c_int * self._maximal_hyperedge_size), ("count", c_int)]
-        self._it_outputs = mp.sharedctypes.Array(HGraph_Recon_it_result, [HGraph_Recon_it_result for i in range(self._cores)], lock=False)
+        self._it_outputs = mp.sharedctypes.Array(HGraph_Recon_it_result, [HGraph_Recon_it_result() for i in range(self._cores)], lock=False)
 
         ### Alternative methods include random init, edge init, or empty (page 6, last paragraph before section [D] )
         #
@@ -165,7 +170,7 @@ class Hypergraph_Reconstructor:
         ( self._P_H_current, self._E_current, self._Z_current) = self.get_Prob_H( self._current_hypergraph)
         
         self._hypergraph_initiated = 1
-        print("Initialised hypergraph.")
+        #print("Initialised hypergraph.")
 
         return
 
@@ -299,7 +304,7 @@ class Hypergraph_Reconstructor:
      # Bool is True when the hypergraph is different from the input
      #
      # float is the hyperprior of the hypergraph
-    def find_candidate_hypergraph(self, i=0) -> bool:
+    def find_candidate_hypergraph(self, index=0, pass_data=dict()) -> bool:
 
         _N  = self._graph_order
         _L  = self._maximal_hyperedge_size
@@ -432,8 +437,14 @@ class Hypergraph_Reconstructor:
                 self._log.append(line)
 
         ## check acceptance. If heads, record the change, otherwise keep the previous hypergraph
-        if _projects_to_graph and _cointoss:
+        if _projects_to_graph and _cointoss and not self._it_found_change:
             
+            self._it_found_change = True
+            self._it_finder       = index
+            #print(f"Iteration {self._iteration} : Core {index} records change.")
+            # other data to pass out one level
+            pass_data["end_time"] = time_ns()
+
             # data for auto-stop
             diff_arr            = [ _E_new[i] - self._current_E_arr[i] for i in range(0, len( _E_new)) ]
             for i in range(0, len(diff_arr)):
@@ -452,15 +463,22 @@ class Hypergraph_Reconstructor:
 
             add_to_history()
             
+            #
             self._current_E_arr = _E_new
-            ( self._P_H_new_list[i], self._E_new_list[i], self._Z_new_list[i]) = ( _P_H_new, _E_new, _Z_new)
+            ( self._E_new_list[index], self._Z_new_list[index]) = ( _E_new, _Z_new)
+            #( self._P_H_new_list[index], self._E_new_list[index], self._Z_new_list[index]) = ( _P_H_new, _E_new, _Z_new)
 
-            self._it_outputs[i].success   = True
-            self._it_outputs[i].hyperedge = _sub_hyperedge
-            self._it_outputs[i].count     = _count
+            self._it_outputs[index].success   = True
+            self._it_hyperedge_change.clear()
+            self._it_hyperedge_change[_sub_hyperedge] = _count
+            # self._it_outputs[index].hyperedge = _sub_hyperedge
+            # self._it_outputs[index].count     = _count
+            if not self._it_finder  == index: # This should never happen but this is here just in case
+                raise Exception(f"ERROR Parallellisation {self._it_finder} != {index} ")
+
             return True
         else:
-            self._it_outputs[i].success   = False
+            self._it_outputs[index].success   = False
             return False
 
     ## main algorithm version 2
@@ -473,11 +491,11 @@ class Hypergraph_Reconstructor:
             self.init_hypergraph()
             self.status()
 
-        failure_autostop_threshold = 100 # activates after failing this many attempts at accepting a candidate h-graph # TODO: Arbitrary
+        failure_autostop_threshold = 20 # activates after failing this many attempts at accepting a candidate h-graph # TODO: Arbitrary
 
         _result          = self.get_Prob_H( self._current_hypergraph)
         for val in _result[0]: pass
-        _best_hyperprior = val
+        #_best_hyperprior = val
         assert type( iterations) == int and iterations > 0, "run_algorithm() error: iterations input"
         _ITERATIONS   = iterations
         _autostop_enabled = bool(autostop)
@@ -498,27 +516,30 @@ class Hypergraph_Reconstructor:
         
         ### run for a set amount of iterations
         
-        i               = 0
-        failed_attempts = 0
-        start_time      = last_successful_it_time = time_ns()
+        i                 = 0
+        failed_attempts   = 0
+        start_time        = last_successful_it_time = time_ns()
+        iteration_runtime = 0
         while i < _ITERATIONS:
-            out            = self.find_candidate_hypergraph()
-            t              = time_ns()
-            iteration_runtime = t - last_successful_it_time
-            if out[0]:
+            self._it_found_change = False
+            self._it_finder       = -1
+            for j in range(self._cores):
+                self._workers[j].run()
+            if self._it_found_change:
+                t              = self._it_pass_data["end_time"]
+                iteration_runtime = t - last_successful_it_time
                 self._iter_runtimes.append(iteration_runtime)
                 self._iter_runtimes_summed.append(iteration_runtime + self._iter_runtimes_summed[-1])
                 last_successful_it_time  = t
                 failed_attempts          = 0
-                _current_hypergraph      = out[1]
-                gen                      = out[2]
-                for val in gen: pass
-                _best_hyperprior         = val
-                self._current_hypergraph = _current_hypergraph
+                # gen                      = out[2] TODO:
+                # for val in gen: pass
+                # _best_hyperprior         = val
+                self._current_hypergraph.update(self._it_hyperedge_change)
                 #self._best_hypergraph    = self._current_hypergraph
-                self._best_hyperprior    = val
+                #self._best_hyperprior    = val
                 #self._P_G_arr.append( ( _best_hypergraph, _best_hyperprior))
-                self._P_G               += val
+                #self._P_G               += val
                 
                 i                       += 1
                 self._iteration         += 1
@@ -562,17 +583,19 @@ class Hypergraph_Reconstructor:
                     sd                       = stdev(self._iter_runtimes, mean)
                     if iteration_runtime > mean + 2*sd:
                 # if time_ns() - last_successful_it_time > 60000000000:
-                # if failed_attempts > failure_autostop_threshold:
-                        s = f"[!] ... due to {failed_attempts} failed attempts after {iteration_runtime} ns with sample mean {mean} and stdeviation {sd}"
-                        autostop(s)
-                        print(s)
-                        break
+                        if failed_attempts > failure_autostop_threshold:
+                            s = f"[!] ... due to {failed_attempts} failed attempts after {iteration_runtime} ns with sample mean {mean} and stdeviation {sd}"
+                            autostop(s)
+                            print(s)
+                            break
+                        else:
+                            print(f"(!) {failed_attempts} timed-out attempts by 2 * std deviation, iteration {self._iteration}")
 
 
         end_time   = time_ns()
         runtime    = end_time - start_time
         self._runtime += runtime
-        self._log.append(f"A target {_ITERATIONS} more iterations took {runtime} ns.")
+        self._log.append(f"A requested {_ITERATIONS} more iterations took {runtime} ns.")
 
         return
 
