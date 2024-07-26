@@ -24,6 +24,7 @@ class Hypergraph_Reconstructor:
 
     def init_hypergraph (self               ) -> None: pass
     def add_to_history  (self, str_data = "") -> None: pass
+    def add_to_history_exact(self, data = frozenset()) -> None: pass
     def add_to_log      (self, str_data = "") -> None: pass
 
     def __init__(self, filename, print_period = 1):
@@ -115,6 +116,7 @@ class Hypergraph_Reconstructor:
                                             # 2 +
                                             # 5 -
         self._history_num_arr        = [] # used for plotting
+        self._history_exact          = [] # keeps track of hyperedge changes. Its format is tuples (hyperedge as frozenset, new count)
 
         self._log                    = [] # a list of types convertible to string, later exportable to a log file
 
@@ -154,6 +156,7 @@ class Hypergraph_Reconstructor:
         for i in range(self._maximal_hyperedge_size + 1):
             h_line += f"{_init_E.get(i, 0)} "
         self._history.append(h_line)
+        self._history_exact.append(h_line)
         self._history_num_arr.append([_init_E.get(i, 0) for i in range(self._maximal_hyperedge_size + 1)])
         # inits the stopping algorithm based on the moving window
         self._stopping_arr  = [ 0 for i in range(0, self._maximal_hyperedge_size + 1) ]
@@ -521,7 +524,7 @@ class Hypergraph_Reconstructor:
                 iteration_runtime = t - last_successful_it_time
                 self._iter_runtimes.append(iteration_runtime)
                 self._iter_runtimes_summed.append(iteration_runtime + self._iter_runtimes_summed[-1])
-                ## 
+                ## Logging
                 s = self._it_pass_data["history_str"]
                 self.add_to_history(s)
                 self._history_num_arr.append(self._it_pass_data["history_num_arr"])
@@ -540,16 +543,14 @@ class Hypergraph_Reconstructor:
 
                 ## Apply the change
                 sub_hyperedge   = list(self._it_hyperedge_change.keys())[0]
-                #count = self._current_hypergraph.get(sub_hyperedge, 0) # debug TODO: remove after debugging
-                #print(f"DEBUG           {sub_hyperedge} : {count} -> ", end='') # debug
                 self._current_hypergraph.update(self._it_hyperedge_change)
                 ## if it's now 0, clean up
                 count = self._it_hyperedge_change.get(sub_hyperedge, -1)
-                #print(f"{count} --- Now ", end='') # debug
                 if count < 1:
                     self._current_hypergraph.pop(sub_hyperedge)
-                #count = self._current_hypergraph.get(sub_hyperedge, -1) # debug TODO: remove after debugging
-                #print(count, end="\n\n") # debug
+                ## More logging
+                self.add_to_history_exact((list(sub_hyperedge), count))
+
                 #self._best_hypergraph    = self._current_hypergraph
                 #self._best_hyperprior    = val
                 #self._P_G_arr.append( ( _best_hypergraph, _best_hyperprior))
@@ -656,6 +657,16 @@ class Hypergraph_Reconstructor:
         write_to_file(fname, data_to_write)
         return
     
+    def output_history_exact_to_log(self, fname = None) -> None:
+        if fname == None:
+            fname = self._file_path + self._filename_only + "(history_exact)" + ".txt"
+        data_to_write = ""
+        for item in self._history_exact:
+            data_to_write += str(item) + '\n'
+            
+        write_to_file(fname, data_to_write)
+        return
+    
     def output_hypergraph_to_log(self, fname = None) -> None:
         if fname == None:
             fname = self._file_path + self._filename_only + "(h_graph)" + ".txt"
@@ -673,6 +684,12 @@ class Hypergraph_Reconstructor:
         lines.append(str_data)
         for line in lines:
             self._history.append(line)
+    
+    def add_to_history_exact(self, data = frozenset()) -> None:
+        lines = [] # allows for passing lists of strings
+        lines.append(str(data))
+        for line in lines:
+            self._history_exact.append(line)
 
     def add_to_log(self, str_data = "") -> None:
         lines = [] # allows for passing lists of strings
