@@ -22,8 +22,9 @@ from helper_functions import *
 ################ Main ################
 class Hypergraph_Reconstructor:
 
-    def init_hypergraph(self) -> None:
-        pass
+    def init_hypergraph (self               ) -> None: pass
+    def add_to_history  (self, str_data = "") -> None: pass
+    def add_to_log      (self, str_data = "") -> None: pass
 
     def __init__(self, filename, print_period = 1):
 
@@ -413,8 +414,25 @@ class Hypergraph_Reconstructor:
             print(f"New E:{ _E_new    } Difference:{[ (_E_new[i] - self._E_current[i]) for i in range(len(_E_new))]}")
             print()
 
-        # Refer to initialisation of self._history
-        def add_to_history():
+        ## check acceptance. If heads, record the change, otherwise keep the previous hypergraph
+        if _projects_to_graph and _cointoss and not self._it_found_change:
+            
+            self._it_found_change = True
+            self._it_finder       = index
+            #print(f"Iteration {self._iteration} : Core {index} records change.")
+
+            # data for auto-stop
+            diff_arr              = [ _E_new[i] - self._E_current[i] for i in range(0, len( _E_new)) ]
+            for i in range(0, len(diff_arr)):
+                e_size = diff_arr[i]
+                if not e_size == 0:
+                    self._diff_E = (e_size, i)
+                    #print(f"Diff_E: {e_size}, {i} <- {_sub_hyperedge} : {self._current_hypergraph.get(_sub_hyperedge, -1)} -> {_new_hypergraph.get(_sub_hyperedge, -1)}") # debug
+                    break
+
+            # Other data to pass out one level
+
+            # Prepares data to add to history. Refer to initialisation of self._history
             change_i = 0
             change_sign = ""
             for i in range(len(_E_new)):
@@ -428,43 +446,11 @@ class Hypergraph_Reconstructor:
                     else:
                         change_sign = "-"
                     break
-
-            self._history.append(str(change_i) + ' ' + change_sign )
-            self._history_num_arr.append(_E_new)
-
-        def add_to_log(str_data = ""):
-            lines = [] # a remnant ?
-            lines.append(str_data )
-            for line in lines:
-                self._log.append(line)
-
-        ## check acceptance. If heads, record the change, otherwise keep the previous hypergraph
-        if _projects_to_graph and _cointoss and not self._it_found_change:
             
-            self._it_found_change = True
-            self._it_finder       = index
-            #print(f"Iteration {self._iteration} : Core {index} records change.")
-            # other data to pass out one level
-            pass_data["end_time"] = time_ns()
-
-            # data for auto-stop
-            diff_arr              = [ _E_new[i] - self._E_current[i] for i in range(0, len( _E_new)) ]
-            for i in range(0, len(diff_arr)):
-                e_size = diff_arr[i]
-                if not e_size == 0:
-                    self._diff_E = (e_size, i)
-                    #print(f"Diff_E: {e_size}, {i} <- {_sub_hyperedge} : {self._current_hypergraph.get(_sub_hyperedge, -1)} -> {_new_hypergraph.get(_sub_hyperedge, -1)}") # debug
-                    break
-
-            # Print the status at most once every 3 seconds and also save to output logs
-            t = time_ns() # note to self: this is called twice, once here within the find-candidate and once immediately after find-candidate has been called; could somehow combine these at a later time
-            iteration_runtime = t - start_time
-            if iteration_runtime > 3000000000:
-                s = f"Iteration {self._iteration} New: {str(_E_new)} diff:{str(self._diff_E)} Auto-stop state: {self._stopping_arr}; {iteration_runtime} ns elapsed until this iteration."
-                print(s)
-                add_to_log(s)
-
-            add_to_history()
+            pass_data["history_str"] = str(change_i) + ' ' + change_sign
+            pass_data["history_num_arr"] = _E_new.copy()
+            pass_data["end_time"]   = time_ns()
+            pass_data["log_str"] = f"Iteration {self._iteration} New: {str(_E_new)} diff:{str(self._diff_E)} Auto-stop state: {self._stopping_arr}; "
             
             #
             self._E_current = _E_new
@@ -533,17 +519,28 @@ class Hypergraph_Reconstructor:
                 iteration_runtime = t - last_successful_it_time
                 self._iter_runtimes.append(iteration_runtime)
                 self._iter_runtimes_summed.append(iteration_runtime + self._iter_runtimes_summed[-1])
+                ## 
+                s = self._it_pass_data["history_str"]
+                self.add_to_history(s)
+                self._history_num_arr.append(self._it_pass_data["history_num_arr"])
+
+                ## Print the status at most once every 3 seconds and also save to output logs
+                if iteration_runtime > 3000000000:
+                    s = self._it_pass_data["log_str"] + f"{iteration_runtime} ns elapsed until this iteration."
+                    print(s)
+                    self.add_to_log(s)
                 last_successful_it_time  = t
                 failed_attempts          = 0
                 # gen                      = out[2] TODO:
                 # for val in gen: pass
                 # _best_hyperprior         = val
 
+                ## Apply the change
                 sub_hyperedge   = list(self._it_hyperedge_change.keys())[0]
                 #count = self._current_hypergraph.get(sub_hyperedge, 0) # debug TODO: remove after debugging
                 #print(f"DEBUG           {sub_hyperedge} : {count} -> ", end='') # debug
                 self._current_hypergraph.update(self._it_hyperedge_change)
-                # if it's now 0, clean up
+                ## if it's now 0, clean up
                 count = self._it_hyperedge_change.get(sub_hyperedge, -1)
                 #print(f"{count} --- Now ", end='') # debug
                 if count < 1:
@@ -667,6 +664,18 @@ class Hypergraph_Reconstructor:
         return
     
     ##### auxilliary methods #####
+
+    def add_to_history(self, str_data = "") -> None:
+        lines = [] # allows for passing lists of strings
+        lines.append(str_data)
+        for line in lines:
+            self._history.append(line)
+
+    def add_to_log(self, str_data = "") -> None:
+        lines = [] # allows for passing lists of strings
+        lines.append(str_data)
+        for line in lines:
+            self._log.append(line)
 
     ## for use when the original graph loaded consists of unconnected subgraphs, this creates a new graph that finds the largest subgraph out of the original graph
     ## returns a new Graph object
