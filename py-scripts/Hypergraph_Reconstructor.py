@@ -378,13 +378,15 @@ class Hypergraph_Reconstructor:
                 termQ = 2
             else:
                 termQ = 1
-        # if it's now 0, clean up
+        
         _count = _new_hypergraph[ _sub_hyperedge]
+        # if it's now 0, clean up ; moved to run_algorithm()
         if _count < 1:
             _new_hypergraph.pop( _sub_hyperedge)
 
         ## calculate the hyperprior P(H) and compare to previous
         ( _P_H_new, _E_new, _Z_new) = self.get_Prob_H( _new_hypergraph)
+        print(f"  {_E_new}  {self._E_current}  {'-' if self._E_current == self._current_E_arr else '!'}") # debug
 
         acceptance_rate = 1
         for k in range(2, _L+1):
@@ -451,6 +453,7 @@ class Hypergraph_Reconstructor:
                 e_size = diff_arr[i]
                 if not e_size == 0:
                     self._diff_E = (e_size, i)
+                    print(f"Diff_E: {e_size}, {i} <- {_sub_hyperedge} : {self._current_hypergraph.get(_sub_hyperedge, -1)} -> {_new_hypergraph.get(_sub_hyperedge, -1)}") # debug
                     break
 
             # Print the status at most once every 3 seconds and also save to output logs
@@ -526,7 +529,7 @@ class Hypergraph_Reconstructor:
             for j in range(self._cores):
                 self._workers[j].run()
             if self._it_found_change:
-                t              = self._it_pass_data["end_time"]
+                t                 = self._it_pass_data["end_time"]
                 iteration_runtime = t - last_successful_it_time
                 self._iter_runtimes.append(iteration_runtime)
                 self._iter_runtimes_summed.append(iteration_runtime + self._iter_runtimes_summed[-1])
@@ -535,7 +538,18 @@ class Hypergraph_Reconstructor:
                 # gen                      = out[2] TODO:
                 # for val in gen: pass
                 # _best_hyperprior         = val
+
+                sub_hyperedge   = list(self._it_hyperedge_change.keys())[0]
+                count = self._current_hypergraph.get(sub_hyperedge, 0) # debug TODO: remove after debugging
+                print(f"DEBUG           {sub_hyperedge} : {count} -> ", end='') # debug
                 self._current_hypergraph.update(self._it_hyperedge_change)
+                # if it's now 0, clean up
+                count = self._it_hyperedge_change.get(sub_hyperedge, -1)
+                print(f"{count} --- Now ", end='') # debug
+                if count < 1:
+                    self._current_hypergraph.pop(sub_hyperedge)
+                count = self._current_hypergraph.get(sub_hyperedge, -1) # debug TODO: remove after debugging
+                print(count, end="\n\n") # debug
                 #self._best_hypergraph    = self._current_hypergraph
                 #self._best_hyperprior    = val
                 #self._P_G_arr.append( ( _best_hypergraph, _best_hyperprior))
