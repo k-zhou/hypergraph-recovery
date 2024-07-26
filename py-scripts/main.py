@@ -75,7 +75,7 @@ def set_current( target = None ) -> bool:
     if not target == None and 0 <= target and target < len(RECONSTRUCTORS):
         global CURRENT
         CURRENT = target
-        print(f"SELECTED [{CURRENT}] : {RECONSTRUCTORS[CURRENT]._filename_only}")
+        print(f"---- ---- ---- ----\nSELECTED [{CURRENT}] : {RECONSTRUCTORS[CURRENT]._filename_only}")
         return True
     else:
         print(f"CANNOT SELECT [{target}]")
