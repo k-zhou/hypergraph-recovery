@@ -513,6 +513,8 @@ class Hypergraph_Reconstructor:
         start_time        = \
         last_successful_it_time = \
         last_print_time   = time_ns()
+        print_time_fail_interval = 15000000000 # 15 seconds
+        next_print_time_fail = last_print_time + print_time_fail_interval
         iteration_runtime = 0
         while i < _ITERATIONS:
             self._it_found_change = False
@@ -531,7 +533,7 @@ class Hypergraph_Reconstructor:
 
                 ## Print the status at most once every 3 seconds and also save to output logs
                 if t - last_print_time > 3000000000:
-                    s = self._it_pass_data["log_str"] + f"{iteration_runtime // 1000000} ms elapsed until this iteration."
+                    s = f"{iteration_runtime // 1000000} ms elapsed until this iteration.\n" + self._it_pass_data["log_str"]
                     print(s)
                     self.add_to_log(s)
                     last_print_time = t
@@ -592,6 +594,12 @@ class Hypergraph_Reconstructor:
                     break
             else:
                 failed_attempts         += 1
+                ## Print the status at most once every 15 seconds and also save to output logs
+                t = time_ns()
+                if t > next_print_time_fail:
+                    s = f"15s elapsed. No successes after {failed_attempts} failed attempts on iteration {self._iteration}.\n" + self._it_pass_data.get("log_str", "No succeed iterations yet.")
+                    print(s)
+                    next_print_time_fail = t + print_time_fail_interval
                 ## auto-stop based on runtime
                 if self._iteration > 10:
                     mean                     = self._iter_runtimes_summed[self._iteration] / self._iteration
@@ -626,7 +634,7 @@ class Hypergraph_Reconstructor:
             data_to_write += str(item) + '\n'
         # additional final details
         data_to_write += f"Total iterations {self._iteration}\n"
-        data_to_write += f"Total algorithm runtime {self._runtime} ns\n  or {self._runtime / 1000000} ms"
+        data_to_write += f"Total algorithm runtime {self._runtime} ns\n  or {self._runtime // 1000000} ms"
 
         write_to_file(fname, data_to_write)
         return
@@ -706,7 +714,7 @@ class Hypergraph_Reconstructor:
             f"Current iteration: {self._iteration}\n"  + \
             f"Edges of size k: {self._E_current}\n"    + \
             f"Auto-stop state: {self._stopping_arr}\n rw_index {self._rw_index} ; stopping sum {self._stopping_sum}\n" + \
-            f"Total runtime: {self._runtime} ns or {self._runtime / 1000000} ms\n" + \
+            f"Total runtime: {self._runtime} ns or {self._runtime // 1000000} ms\n" + \
             f"--------------------------------\n"
         print(s)
 
