@@ -468,6 +468,8 @@ class Hypergraph_Reconstructor:
         start_time      = \
         last_successful_it_time = \
         last_print_time = time_ns()
+        print_time_fail_interval = 15000000000 # 15 seconds
+        next_print_time_fail = last_print_time + print_time_fail_interval
         pass_data         = dict()
         while i < _ITERATIONS:
             
@@ -490,7 +492,7 @@ class Hypergraph_Reconstructor:
 
                 ## Print the status at most once every 3 seconds and also save to output logs
                 if t - last_print_time > 3000000000:
-                    s = self._it_pass_data["log_str"] + f"{iteration_runtime // 1000000} ms elapsed until this iteration."
+                    s = f"{iteration_runtime // 1000000} ms elapsed until this iteration.\n" + self._it_pass_data["log_str"]
                     print(s)
                     self.add_to_log(s)
                     last_print_time = t
@@ -543,6 +545,12 @@ class Hypergraph_Reconstructor:
                     break
             else:
                 failed_attempts         += 1
+                ## Print the status at most once every 15 seconds and also save to output logs
+                t = time_ns()
+                if t > next_print_time_fail:
+                    s = f"15s elapsed. No successes after {failed_attempts} failed attempts on iteration {self._iteration}.\n" + self._it_pass_data.get("log_str", "No succeed iterations yet.")
+                    print(s)
+                    next_print_time_fail = t + print_time_fail_interval
                 ## auto-stop based on runtime
                 if self._iteration > 10:
                     mean                     = self._iter_runtimes_summed[self._iteration] / self._iteration
