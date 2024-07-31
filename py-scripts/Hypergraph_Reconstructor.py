@@ -47,12 +47,12 @@ class Hypergraph_Reconstructor:
         self._P_G_arr                = [] # mostly unused, holds tuples of (hypergraph, hyperprior (Int))
         self._P_G                    = 1
         self._P_H_current            = 0
-        self._E_current              = []
+        
         self._Z_current              = []
 
         ## the current hypergraph's tally of hyperedges of size k, ordered by index
         # i.e. [2] holds the tally of 2-edges, [3] holds the tally of 3-edges etc.
-        self._current_E_arr          = []
+        self._E_current              = []
         self._diff_E                 = (0, 0)
 
         ## For use in automatically stopping the algorithm.
@@ -61,10 +61,10 @@ class Hypergraph_Reconstructor:
         # For this, use an array as a rolling window to keep track of the changes in the tally of all sizes of hyperedges
         # in the past 100 iterations, sum them up, and use an error margin of 5% to stop the algorithm automatically.
 
-        # _stopping_arr needs a more specific dimension that is the same as _E_k or _current_E_arr, to be defined later together with _maximal_hyperedge_size
+        # _stopping_arr needs a more specific dimension that is the same as _E_k or _E_current, to be defined later together with _maximal_hyperedge_size
         # (v, k) v takes the two values  [-1, +1], k takes the int values [0, k_max] where k_max is the _maximal_hyperedge_size
         # At every iteration, from the array _rolling_window, take the tuple (v, k) pointed to by index _rw_index,
-        # subtract the value v from the array _stopping_arr at index k, replace (v, k) with the change in _E_k that leads to _current_E_arr,
+        # subtract the value v from the array _stopping_arr at index k, replace (v, k) with the change in _E_k that leads to _E_current,
         #  add this new value v_new to _stopping_arr at k_new given by _diff_E
         # advance _rw_index, and wrap back around if past index bounds,
         # calculate the folded sum of _stopping_arr and stop the algorithm when it approaches 0.
@@ -138,9 +138,9 @@ class Hypergraph_Reconstructor:
         self._history_num_arr.append([_init_E.get(i, 0) for i in range(self._maximal_hyperedge_size + 1)])
         # inits the stopping algorithm based on the moving window
         self._stopping_arr  = [ 0 for i in range(0, self._maximal_hyperedge_size + 1) ]
-        self._current_E_arr = [ 0 for i in range(0, self._maximal_hyperedge_size + 1) ]
+        self._E_current     = [ 0 for i in range(0, self._maximal_hyperedge_size + 1) ]
         for e_size in current_E_arr_wip:
-            self._current_E_arr[e_size] += 1 #
+            self._E_current[e_size] += 1 #
 
         ### Alternative methods include random init, edge init, or empty (page 6, last paragraph before section [D] )
         #
@@ -415,7 +415,7 @@ class Hypergraph_Reconstructor:
         if _projects_to_graph and _cointoss:
             
             # data for auto-stop
-            diff_arr            = [ _E_new[i] - self._current_E_arr[i] for i in range(0, len( _E_new)) ]
+            diff_arr            = [ _E_new[i] - self._E_current[i] for i in range(0, len( _E_new)) ]
             for i in range(0, len(diff_arr)):
                 e_size = diff_arr[i]
                 if not e_size == 0:
@@ -432,7 +432,6 @@ class Hypergraph_Reconstructor:
 
             add_to_history()
             
-            self._current_E_arr = _E_new
             ( self._P_H_current, self._E_current, self._Z_current) = ( _P_H_new, _E_new, _Z_new)
             return (True, _new_hypergraph, _P_H_new)
         else:
@@ -631,6 +630,6 @@ class Hypergraph_Reconstructor:
     def status(self):
         print(f"--- Status of {self._filename} ---")
         print(f"Current iteration: {self._iteration}")
-        print(f"Edges of size k: {self._current_E_arr}")
+        print(f"Edges of size k: {self._E_current}")
         print(f"Auto-stop state: {self._stopping_arr}\n rw_index {self._rw_index} ; stopping sum {self._stopping_sum}")
         print(f"Total runtime: {self._runtime} ns or {self._runtime / 1000000} ms")
