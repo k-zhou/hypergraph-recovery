@@ -5,7 +5,7 @@ from graph_tool.all import *
 from      itertools import combinations
 from           time import time_ns, sleep
 import       random
-import        numpy as     np
+#import        numpy     as np
 
 from helper_functions import *
 
@@ -15,9 +15,13 @@ from helper_functions import *
 # graph order: number of vertices
 
 # How to program an automatic detection for reaching an equilibrium that only fluctuates little?
+############### Helpers #################
 
-### Find best hypergraph ########################
+################ Main ################
 class Hypergraph_Reconstructor:
+
+    def init_hypergraph(self) -> None:
+        pass
 
     def __init__(self, filename, print_period = 1):
 
@@ -94,6 +98,7 @@ class Hypergraph_Reconstructor:
 
         self._log.append(self._filename_pathless)
         print(f"\tFile: {self._filename}") #Print period {self._print_period}")
+        self.init_hypergraph()
 
     ##########################
 
@@ -140,6 +145,7 @@ class Hypergraph_Reconstructor:
         ( self._P_H_current, self._E_current, self._Z_current) = self.get_Prob_H( self._current_hypergraph)
         
         self._hypergraph_initiated = 1
+        #print("Initialised hypergraph.")
 
         return
 
