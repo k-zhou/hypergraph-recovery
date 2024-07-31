@@ -650,11 +650,13 @@ class Hypergraph_Reconstructor:
 
     ## Prints the current state of the hypergraph
     def status(self):
-        print(f"--- Status of {self._filename} ---")
-        print(f"Current iteration: {self._iteration}")
-        print(f"Edges of size k: {self._E_current}")
-        print(f"Auto-stop state: {self._stopping_arr}\n rw_index {self._rw_index} ; stopping sum {self._stopping_sum}")
-        print(f"Total runtime: {self._runtime} ns or {self._runtime / 1000000} ms")
+        s = f"--- Status of {self._filename} ---\n"    + \
+            f"Current iteration: {self._iteration}\n"  + \
+            f"Edges of size k: {self._E_current}\n"    + \
+            f"Auto-stop state: {self._stopping_arr}\n rw_index {self._rw_index} ; stopping sum {self._stopping_sum}\n" + \
+            f"Total runtime: {self._runtime} ns or {self._runtime / 1000000} ms\n" + \
+            f"--------------------------------\n"
+        print(s)
 
     # ## Observation: as of this 28.11.2022 implementation, the algorithm tends to endlessly add 2-edges. This method cuts down on the number of repeated hyperedges to a given maximum number
     # ## returns a number (int) of all those pruned away
