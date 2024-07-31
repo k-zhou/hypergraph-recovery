@@ -465,7 +465,9 @@ class Hypergraph_Reconstructor:
         
         i               = 0
         failed_attempts = 0
-        start_time      = last_successful_it_time = time_ns()
+        start_time      = \
+        last_successful_it_time = \
+        last_print_time = time_ns()
         pass_data         = dict()
         while i < _ITERATIONS:
             
@@ -487,10 +489,11 @@ class Hypergraph_Reconstructor:
                 self.add_to_history_exact((list(sub_hyperedge), count))
 
                 ## Print the status at most once every 3 seconds and also save to output logs
-                if iteration_runtime > 3000000000:
-                    s = self._it_pass_data["log_str"] + f"{iteration_runtime} ns elapsed until this iteration."
+                if t - last_print_time > 3000000000:
+                    s = self._it_pass_data["log_str"] + f"{iteration_runtime // 1000000} ms elapsed until this iteration."
                     print(s)
                     self.add_to_log(s)
+                    last_print_time = t
                 
                 last_successful_it_time  = t
                 failed_attempts          = 0
@@ -545,11 +548,11 @@ class Hypergraph_Reconstructor:
                     mean                     = self._iter_runtimes_summed[self._iteration] / self._iteration
                     sd                       = stdev(self._iter_runtimes, mean)
                     if iteration_runtime > mean + 2*sd:
-                # if time_ns() - last_successful_it_time > 60000000000:
                         if failed_attempts > failure_autostop_threshold:
                             s = f"[!] ... due to {failed_attempts} failed attempts after {iteration_runtime} ns with sample mean {mean} and stdeviation {sd}"
                             autostop(s)
                             print(s)
+                            self.add_to_log(s)
                             break
                         else:
                             print(f"(!) {failed_attempts} timed-out attempts by 2 * std deviation, iteration {self._iteration}")
