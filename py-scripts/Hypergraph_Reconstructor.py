@@ -19,7 +19,9 @@ from helper_functions import *
 ################ Main ################
 class Hypergraph_Reconstructor:
 
-    def init_hypergraph(self) -> None: pass
+    def init_hypergraph (self               ) -> None: pass
+    def add_to_history  (self, str_data = "") -> None: pass
+    def add_to_log      (self, str_data = "") -> None: pass
 
     def __init__(self, filename, print_period = 1):
 
@@ -280,7 +282,7 @@ class Hypergraph_Reconstructor:
      # Bool is True when the hypergraph is different from the input
      #
      # float is the hyperprior of the hypergraph
-    def find_candidate_hypergraph(self):
+    def find_candidate_hypergraph(self, index=0, pass_data=dict()):
 
         _N  = self._graph_order
         _L  = self._maximal_hyperedge_size
@@ -384,8 +386,12 @@ class Hypergraph_Reconstructor:
             print(f"New E:{ _E_new    } Difference:{[ (_E_new[i] - self._E_current[i]) for i in range(len(_E_new))]}")
             print()
 
-        # Refer to initialisation of self._history
-        def add_to_history():
+
+        ## check acceptance. If heads, record the change, otherwise keep the previous hypergraph
+        if _projects_to_graph and _cointoss:
+            
+            ## Data to pass outwards
+            ## Prepares data to add to history. Refer to initialisation of self._history
             change_i = 0
             change_sign = ""
             for i in range(len(_E_new)):
@@ -399,19 +405,11 @@ class Hypergraph_Reconstructor:
                     else:
                         change_sign = "-"
                     break
+            pass_data["history_str"] = str(change_i) + ' ' + change_sign
+            pass_data["history_num_arr"] = _E_new.copy()
+            pass_data["end_time"]   = time_ns()
+            pass_data["log_str"] = f"Iteration {self._iteration} New: {str(_E_new)} diff:{str(self._diff_E)} Auto-stop state: {self._stopping_arr}; "
 
-            self._history.append(str(change_i) + ' ' + change_sign )
-            self._history_num_arr.append(_E_new)
-
-        def add_to_log(str_data = ""):
-            lines = [] # a remnant ?
-            lines.append(str_data )
-            for line in lines:
-                self._log.append(line)
-
-        ## check acceptance. If heads, record the change, otherwise keep the previous hypergraph
-        if _projects_to_graph and _cointoss:
-            
             # data for auto-stop
             diff_arr            = [ _E_new[i] - self._E_current[i] for i in range(0, len( _E_new)) ]
             for i in range(0, len(diff_arr)):
@@ -419,16 +417,6 @@ class Hypergraph_Reconstructor:
                 if not e_size == 0:
                     self._diff_E = (e_size, i)
                     break
-
-            # Print the status at most once every 3 seconds and also save to output logs
-            t = time_ns() # note to self: this is called twice, once here within the find-candidate and once immediately after find-candidate has been called; could somehow combine these at a later time
-            iteration_runtime = t - start_time
-            if iteration_runtime > 3000000000:
-                s = f"Iteration {self._iteration} New: {str(_E_new)} diff:{str(self._diff_E)} Auto-stop state: {self._stopping_arr}; {iteration_runtime} ns elapsed until this iteration."
-                print(s)
-                add_to_log(s)
-
-            add_to_history()
             
             self._E_current = _E_new
             ( self._P_H_current, self._E_current, self._Z_current) = ( _P_H_new, _E_new, _Z_new)
@@ -474,13 +462,28 @@ class Hypergraph_Reconstructor:
         i               = 0
         failed_attempts = 0
         start_time      = last_successful_it_time = time_ns()
+        pass_data         = dict()
         while i < _ITERATIONS:
-            out            = self.find_candidate_hypergraph()
-            t              = time_ns()
-            iteration_runtime = t - last_successful_it_time
+            
+            out               = self.find_candidate_hypergraph(0, pass_data)
+            
             if out[0]:
+
+                t                 = pass_data["end_time"]
+                iteration_runtime = t - last_successful_it_time
                 self._iter_runtimes.append(iteration_runtime)
                 self._iter_runtimes_summed.append(iteration_runtime + self._iter_runtimes_summed[-1])
+
+                s = self._it_pass_data["history_str"]
+                self.add_to_history(s)
+                self._history_num_arr.append(self._it_pass_data["history_num_arr"])
+
+                ## Print the status at most once every 3 seconds and also save to output logs
+                if iteration_runtime > 3000000000:
+                    s = self._it_pass_data["log_str"] + f"{iteration_runtime} ns elapsed until this iteration."
+                    print(s)
+                    self.add_to_log(s)
+                
                 last_successful_it_time  = t
                 failed_attempts          = 0
                 _current_hypergraph      = out[1]
@@ -551,6 +554,8 @@ class Hypergraph_Reconstructor:
 
         return
 
+    ##### auxilliary methods #####
+    
     ## Observation: as of this 28.11.2022 implementation, the algorithm tends to endlessly add 2-edges. This method cuts down on the number of repeated hyperedges to a given maximum number
     ## returns a number (int) of all those pruned away
 
@@ -569,8 +574,21 @@ class Hypergraph_Reconstructor:
                 self._current_hypergraph[ hyperedge] = threshold
         print(f"{stats} hyperedges pruned")
         return stats
-    
-    # logging
+
+    ## logging
+
+    def add_to_history(self, str_data = "") -> None:
+        lines = [] # allows for passing lists of strings
+        lines.append(str_data)
+        for line in lines:
+            self._history.append(line)
+
+    def add_to_log(self, str_data = "") -> None:
+        lines = [] # allows for passing lists of strings
+        lines.append(str_data)
+        for line in lines:
+            self._log.append(line)
+
     def output_to_log(self, fname = None) -> None:
         if fname == None:
             fname = self._file_path + self._filename_only + "(log)" + ".txt"
@@ -604,8 +622,6 @@ class Hypergraph_Reconstructor:
         write_to_file(fname, data_to_write)
         return
     
-    ##### auxilliary methods #####
-
     ## for use when the original graph loaded consists of unconnected subgraphs, this creates a new graph that finds the largest subgraph out of the original graph
     ## returns a new Graph object
     def get_largest_subgraph(self):
