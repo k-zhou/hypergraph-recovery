@@ -52,6 +52,7 @@ class Hypergraph_Reconstructor:
         self._P_H_current            = 0
         
         self._Z_current              = []
+        self._it_pass_data           = dict()
 
         ## the current hypergraph's tally of hyperedges of size k, ordered by index
         # i.e. [2] holds the tally of 2-edges, [3] holds the tally of 3-edges etc.
@@ -472,14 +473,13 @@ class Hypergraph_Reconstructor:
         last_print_time = time_ns()
         print_time_fail_interval = 15000000000 # 15 seconds
         next_print_time_fail = last_print_time + print_time_fail_interval
-        pass_data         = dict()
         while i < _ITERATIONS:
             
-            out               = self.find_candidate_hypergraph(0, pass_data)
+            out               = self.find_candidate_hypergraph(0, self._it_pass_data)
             
             if out[0]:
 
-                t                 = pass_data["end_time"]
+                t                 = self._it_pass_data["end_time"]
                 iteration_runtime = t - last_successful_it_time
                 self._iter_runtimes.append(iteration_runtime)
                 self._iter_runtimes_summed.append(iteration_runtime + self._iter_runtimes_summed[-1])
