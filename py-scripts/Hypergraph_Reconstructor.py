@@ -5,14 +5,15 @@ from graph_tool.all import *
 from      itertools import combinations
 from           time import time_ns, sleep
 import       random
-import        numpy as     np
+#import        numpy     as np
 
 from helper_functions import *
 
 # graph  size: number of edges
 # graph order: number of vertices
-
 # How to program an automatic detection for reaching an equilibrium that only fluctuates little?
+############### Helpers #################
+############### Helpers #################
 
 ############### Helpers #################
 
@@ -35,6 +36,7 @@ class Hypergraph_Reconstructor:
         self._file_path              = strip_filename_suffix(self._filename, '/') + '/'
         self._filename_only          = strip_filename_suffix(self._filename_pathless)
 
+        #
         self._adj_graph              = self.get_adjacency_from_Graph(self._g) # adjacency list as a dict( frozensets) -> Z+
         self._graph_edges_total      = self._g.num_edges()
         self._graph_order            = self._g.num_vertices()
@@ -114,11 +116,11 @@ class Hypergraph_Reconstructor:
     # Sets (or resets) the current hypergraph using some initialisation method on the original graph
     def init_hypergraph(self) -> None:
 
-        _init_E = dict() # Keeps track of the count of all h-edges sized n in the initial state, refer to self._history
-        current_E_arr_wip        = [] # use as linked list, collect all the hyperedges as their size here for the zeroth iteration
+        _init_E           = dict() # Keeps track of the count of all h-edges sized n in the initial state, refer to self._history
+        current_E_arr_wip = [] # use as linked list, collect all the hyperedges as their size here for the zeroth iteration
 
         ### Current methodology: Adds all maximal cliques as hyperedges to the hypergraph.
-        _m_cliques      = max_cliques( self._g ) # returns: iterator over numpy.ndarray
+        _m_cliques        = max_cliques( self._g ) # returns: iterator over numpy.ndarray
         for clique in _m_cliques:
             fs = frozenset( clique )
             self._current_hypergraph[ fs ] = 1 # + _h_graph.get(fs, 0)
@@ -139,7 +141,7 @@ class Hypergraph_Reconstructor:
         self._history.append(h_line)
         self._history_exact.append(h_line)
         self._history_num_arr.append([_init_E.get(i, 0) for i in range(self._maximal_hyperedge_size + 1)])
-
+        # inits the stopping algorithm based on the moving window
         self._stopping_arr  = [ 0 for i in range(0, self._maximal_hyperedge_size + 1) ]
         self._E_current     = [ 0 for i in range(0, self._maximal_hyperedge_size + 1) ]
         for e_size in current_E_arr_wip:
