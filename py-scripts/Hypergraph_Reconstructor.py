@@ -21,6 +21,7 @@ class Hypergraph_Reconstructor:
 
     def init_hypergraph (self               ) -> None: pass
     def add_to_history  (self, str_data = "") -> None: pass
+    def add_to_history_exact(self, data = frozenset()) -> None: pass
     def add_to_log      (self, str_data = "") -> None: pass
 
     def __init__(self, filename, print_period = 1):
@@ -96,6 +97,7 @@ class Hypergraph_Reconstructor:
                                             # 2 +
                                             # 5 -
         self._history_num_arr        = [] # used for plotting
+        self._history_exact          = [] # keeps track of hyperedge changes. Its format is tuples (hyperedge as frozenset, new count)
 
         self._log                    = [] # a list of types convertible to string, later exportable to a log file
 
@@ -135,6 +137,7 @@ class Hypergraph_Reconstructor:
         for i in range(self._maximal_hyperedge_size + 1):
             h_line += f"{_init_E.get(i, 0)} "
         self._history.append(h_line)
+        self._history_exact.append(h_line)
         self._history_num_arr.append([_init_E.get(i, 0) for i in range(self._maximal_hyperedge_size + 1)])
 
         self._stopping_arr  = [ 0 for i in range(0, self._maximal_hyperedge_size + 1) ]
@@ -355,7 +358,8 @@ class Hypergraph_Reconstructor:
             else:
                 termQ = 1
         # if it's now 0, clean up
-        if _new_hypergraph[ _sub_hyperedge] < 1:
+        _count = _new_hypergraph[ _sub_hyperedge]
+        if _count < 1:
             _new_hypergraph.pop( _sub_hyperedge)
 
         ## calculate the hyperprior P(H) and compare to previous
@@ -420,9 +424,9 @@ class Hypergraph_Reconstructor:
             
             self._E_current = _E_new
             ( self._P_H_current, self._E_current, self._Z_current) = ( _P_H_new, _E_new, _Z_new)
-            return (True, _new_hypergraph, _P_H_new)
+            return (True, _new_hypergraph, _P_H_new, _sub_hyperedge, _count)
         else:
-            return (False, self._current_hypergraph, self._P_H_current)
+            return (False, self._current_hypergraph, self._P_H_current, frozenset(), 0)
 
     ## main algorithm version 2
     ## use this method to run the algorithm for a set amount of iterations
@@ -474,9 +478,13 @@ class Hypergraph_Reconstructor:
                 self._iter_runtimes.append(iteration_runtime)
                 self._iter_runtimes_summed.append(iteration_runtime + self._iter_runtimes_summed[-1])
 
+                ## Logging
                 s = self._it_pass_data["history_str"]
                 self.add_to_history(s)
                 self._history_num_arr.append(self._it_pass_data["history_num_arr"])
+                sub_hyperedge = out[3]
+                count         = out[4]
+                self.add_to_history_exact((list(sub_hyperedge), count))
 
                 ## Print the status at most once every 3 seconds and also save to output logs
                 if iteration_runtime > 3000000000:
@@ -583,6 +591,12 @@ class Hypergraph_Reconstructor:
         for line in lines:
             self._history.append(line)
 
+    def add_to_history_exact(self, data = frozenset()) -> None:
+        lines = [] # allows for passing lists of strings
+        lines.append(str(data))
+        for line in lines:
+            self._history_exact.append(line)
+
     def add_to_log(self, str_data = "") -> None:
         lines = [] # allows for passing lists of strings
         lines.append(str_data)
@@ -612,6 +626,16 @@ class Hypergraph_Reconstructor:
         write_to_file(fname, data_to_write)
         return
     
+    def output_history_exact_to_log(self, fname = None) -> None:
+        if fname == None:
+            fname = self._file_path + self._filename_only + "(history_exact)" + ".txt"
+        data_to_write = ""
+        for item in self._history_exact:
+            data_to_write += str(item) + '\n'
+
+        write_to_file(fname, data_to_write)
+        return
+
     def output_hypergraph_to_log(self, fname = None) -> None:
         if fname == None:
             fname = self._file_path + self._filename_only + "(h_graph)" + ".txt"

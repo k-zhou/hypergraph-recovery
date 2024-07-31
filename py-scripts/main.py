@@ -126,6 +126,14 @@ def save_history() -> None:
     print(f"Saved to {fn}")
     return
 
+def save_history_exact() -> None:
+    global RECONSTRUCTORS, CURRENT, OUTPUT_LOCATION
+    rec = RECONSTRUCTORS[CURRENT]
+    fn  = OUTPUT_LOCATION + rec._filename_only + "(history_exact)" + ".txt"
+    rec.output_history_exact_to_log(fn)
+    print(f"Saved to {fn}")
+    return
+
 def save_hypergraph() -> None:
     global RECONSTRUCTORS, CURRENT, OUTPUT_LOCATION
     rec = RECONSTRUCTORS[CURRENT]
