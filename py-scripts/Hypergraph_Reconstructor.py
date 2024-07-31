@@ -564,25 +564,6 @@ class Hypergraph_Reconstructor:
 
     ##### auxilliary methods #####
     
-    ## Observation: as of this 28.11.2022 implementation, the algorithm tends to endlessly add 2-edges. This method cuts down on the number of repeated hyperedges to a given maximum number
-    ## returns a number (int) of all those pruned away
-
-    ## edit 1: or no, it doesn't now. What is going on? Now it's stabilizing around some values
-    #  edit 2: Think I've found an odd bug. After loading up the file into the object you'd normally need to use the method init_hypergraph() to set the initial state for the algorithm to run on. If you do this, the test graph windsurfers.gt will stabilize to some hypergraph of 800 2-edges. If you don't initialize and try to run the algorithm, it'll throw an error as per planned; but if you then initialize it and run the recovery algorithm, it will "stabilize" around 400 2-edges 430 3-edges. The 3-edges part is stable but the 2-edges part will endlessly rise in count.
-
-    def prune_hypergraph(self, threshold) -> int:
-
-        assert type( threshold)  == int and threshold >= 0
-
-        stats = 0
-        for hyperedge in self._current_hypergraph:
-            count = self._current_hypergraph[ hyperedge]
-            if count > threshold:
-                stats += count - threshold
-                self._current_hypergraph[ hyperedge] = threshold
-        print(f"{stats} hyperedges pruned")
-        return stats
-
     ## logging
 
     def add_to_history(self, str_data = "") -> None:
@@ -674,3 +655,22 @@ class Hypergraph_Reconstructor:
         print(f"Edges of size k: {self._E_current}")
         print(f"Auto-stop state: {self._stopping_arr}\n rw_index {self._rw_index} ; stopping sum {self._stopping_sum}")
         print(f"Total runtime: {self._runtime} ns or {self._runtime / 1000000} ms")
+
+    # ## Observation: as of this 28.11.2022 implementation, the algorithm tends to endlessly add 2-edges. This method cuts down on the number of repeated hyperedges to a given maximum number
+    # ## returns a number (int) of all those pruned away
+
+    # ## edit 1: or no, it doesn't now. What is going on? Now it's stabilizing around some values
+    # #  edit 2: Think I've found an odd bug. After loading up the file into the object you'd normally need to use the method init_hypergraph() to set the initial state for the algorithm to run on. If you do this, the test graph windsurfers.gt will stabilize to some hypergraph of 800 2-edges. If you don't initialize and try to run the algorithm, it'll throw an error as per planned; but if you then initialize it and run the recovery algorithm, it will "stabilize" around 400 2-edges 430 3-edges. The 3-edges part is stable but the 2-edges part will endlessly rise in count.
+
+    # def prune_hypergraph(self, threshold) -> int:
+
+    #     assert type( threshold)  == int and threshold >= 0
+
+    #     stats = 0
+    #     for hyperedge in self._current_hypergraph:
+    #         count = self._current_hypergraph[ hyperedge]
+    #         if count > threshold:
+    #             stats += count - threshold
+    #             self._current_hypergraph[ hyperedge] = threshold
+    #     print(f"{stats} hyperedges pruned")
+    #     return stats
