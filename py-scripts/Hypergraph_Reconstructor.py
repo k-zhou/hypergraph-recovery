@@ -665,7 +665,7 @@ class Hypergraph_Reconstructor:
             f"Current iteration: {self._iteration}\n"  + \
             f"Edges of size k: {self._E_current}\n"    + \
             f"Auto-stop state: {self._stopping_arr}\n rw_index {self._rw_index} ; stopping sum {self._stopping_sum}\n" + \
-            f"Total runtime: {self._runtime} ns or {self._runtime / 1000000} ms\n" + \
+            f"Total runtime: {self._runtime} ns or {self._runtime // 1000000} ms\n" + \
             f"--------------------------------\n"
         print(s)
 
