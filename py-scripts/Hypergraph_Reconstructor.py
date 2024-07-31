@@ -376,16 +376,16 @@ class Hypergraph_Reconstructor:
         ## check whether P(G|H) = 1 holds
         _projects_to_graph = self.get_Prob_G_if_H( self.get_adjacency_from_hypergraph( _new_hypergraph))
 
-        def print_progress():
-            print(f"\nIteration {self._iteration}")
-            print(f"hyperedge { _sub_hyperedge} : { _new_hypergraph.get( _sub_hyperedge, 0)}  ", end = '')
-            print(f"acceptance rate { acceptance_rate}, ", end='') #<- coin toss:{ _cointoss}")
-            print(f"len { len( _new_hypergraph)}")
-            #print(f"Old E:{ _E_current}") # Z:{[ '{:.1E}'.format(val) for val in _Z_current ]}")
-            #print(f"New E:{ _E_new    }") # Z:{[ '{:.1E}'.format(val) for val in _Z_new     ]}")
-            print(f"New E:{ _E_new    } Difference:{[ (_E_new[i] - self._E_current[i]) for i in range(len(_E_new))]}")
-            print()
-
+        ## text for printing progress status
+        # s1 = f"\nIteration {self._iteration}\n" + \
+        #      f"hyperedge { _sub_hyperedge} : { _new_hypergraph.get( _sub_hyperedge, 0)}  " + \
+        #      f"acceptance rate { acceptance_rate}, " + \
+        #      f"len { len( _new_hypergraph)}\n"
+        #     #acceptance rate <- coin toss:{ _cointoss}")
+        #     #f"Old E:{ _E_current}") # Z:{[ '{:.1E}'.format(val) for val in _Z_current ]}"
+        #     #f"New E:{ _E_new    }") # Z:{[ '{:.1E}'.format(val) for val in _Z_new     ]}"
+        # s2 = f"New E:{ _E_new    } Difference:{[ (_E_new[i] - self._E_current[i]) for i in range(len(_E_new))]}\n"
+        # pass_data["progress_str"] = s1 + s2
 
         ## check acceptance. If heads, record the change, otherwise keep the previous hypergraph
         if _projects_to_graph and _cointoss:
