@@ -535,17 +535,19 @@ class Hypergraph_Reconstructor:
                     sd                       = stdev(self._iter_runtimes, mean)
                     if iteration_runtime > mean + 2*sd:
                 # if time_ns() - last_successful_it_time > 60000000000:
-                # if failed_attempts > failure_autostop_threshold:
-                        s = f"[!] ... due to {failed_attempts} failed attempts after {iteration_runtime} ns with sample mean {mean} and stdeviation {sd}"
-                        autostop(s)
-                        print(s)
-                        break
+                        if failed_attempts > failure_autostop_threshold:
+                            s = f"[!] ... due to {failed_attempts} failed attempts after {iteration_runtime} ns with sample mean {mean} and stdeviation {sd}"
+                            autostop(s)
+                            print(s)
+                            break
+                        else:
+                            print(f"(!) {failed_attempts} timed-out attempts by 2 * std deviation, iteration {self._iteration}")
 
 
         end_time   = time_ns()
         runtime    = end_time - start_time
         self._runtime += runtime
-        self._log.append(f"A target {_ITERATIONS} more iterations took {runtime} ns.")
+        self._log.append(f"More iterations took {runtime} ns or {runtime // 1000000} ms.")
 
         return
 
