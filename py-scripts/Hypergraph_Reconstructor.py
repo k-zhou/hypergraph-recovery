@@ -545,6 +545,10 @@ class Hypergraph_Reconstructor:
                     break
             else:
                 failed_attempts         += 1
+                if failed_attempts >= 10000:
+                    s = f"[!] 10000 failed attempts reached at iteration {self._iteration}. Auto-stopping algorithm.\n"
+                    autostop(s)
+                    break
                 ## Print the status at most once every 15 seconds and also save to output logs
                 t = time_ns()
                 if t > next_print_time_fail:
