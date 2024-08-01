@@ -89,10 +89,10 @@ class Hypergraph_Reconstructor:
 
         ## keeping running stats
         self._print_period           = print_period # used to control printing to console only periodically, static
-        self._print_clock            = time_ns()
+        self._print_clock            = time_ns() # TODO: unused
         self._iteration              = 0
         self._runtime                = 0 # runtime of the algorithm in ns
-        self._hypergraph_initiated   = 0
+        self._hypergraph_initiated   = 0 # TODO: redundant
         self._history                = [] # used to track the changes of h-edges during each iteration, each element corresponding to
                                             # a string row when outputting to a txt file.
                                             # The first line is the initial count of different sized h-edges i.e. 
@@ -102,13 +102,13 @@ class Hypergraph_Reconstructor:
                                             # Every line after that is the size of the h-edge being added/removed with a + or - e.g. :   
                                             # 2 +
                                             # 5 -
-        self._history_num_arr        = [] # used for plotting
+        self._history_num_arr        = [] # used for plotting, each element at index n corresponds to the array E at iteration n
         self._history_exact          = [] # keeps track of hyperedge changes. Its format is tuples (hyperedge as frozenset, new count)
 
         self._log                    = [] # a list of types convertible to string, later exportable to a log file
 
         self._log.append(self._filename_pathless)
-        print(f"\tFile: {self._filename} :", end='') #Print period {self._print_period}")
+        print(f"\tFile: {self._filename} :", end='')
         self.init_hypergraph()
 
     ##########################
@@ -679,6 +679,7 @@ class Hypergraph_Reconstructor:
             f"--------------------------------\n"
         print(s)
 
+    ###### outdated #######
     # ## Observation: as of this 28.11.2022 implementation, the algorithm tends to endlessly add 2-edges. This method cuts down on the number of repeated hyperedges to a given maximum number
     # ## returns a number (int) of all those pruned away
 
