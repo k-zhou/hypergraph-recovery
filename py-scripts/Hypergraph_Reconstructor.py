@@ -34,7 +34,7 @@ class Hypergraph_Reconstructor:
         self._file_path              = strip_filename_suffix(self._filename, '/') + '/'
         self._filename_only          = strip_filename_suffix(self._filename_pathless)
 
-        #
+        ## Graph information
         self._adj_graph              = self.get_adjacency_from_Graph(self._g) # adjacency list as a dict( frozensets) -> Z+
         self._graph_edges_total      = self._g.num_edges()
         self._graph_order            = self._g.num_vertices()
@@ -50,7 +50,6 @@ class Hypergraph_Reconstructor:
         self._P_H_current            = 0
         
         self._Z_current              = []
-        self._it_pass_data           = dict()
 
         ## the current hypergraph's tally of hyperedges of size k, ordered by index
         ## i.e. [2] holds the tally of 2-edges, [3] holds the tally of 3-edges etc.
@@ -76,6 +75,12 @@ class Hypergraph_Reconstructor:
         self._rw_index               = 0
         self._stopping_sum           = 0
         self._auto_stopped           = False
+
+        ## Iteration data
+        self._iter_failed_attempts   = 0
+        self._iter_failure_autostop_threshold = 10 # activates after failing this many attempts at accepting a candidate h-graph # TODO: Arbitrary
+        self._iter_pass_data         = dict()
+        self._last_successful_iter_time = 0
 
         ## Runtime-based auto-stop, used for big graphs taking longer than a few seconds per accepted iteration change
         ## this uses probability- and normal distribution -based stopping
@@ -439,8 +444,6 @@ class Hypergraph_Reconstructor:
             self.init_hypergraph()
             self.status()
 
-        failure_autostop_threshold = 20 # activates after failing this many attempts at accepting a candidate h-graph # TODO: Arbitrary
-
         _result          = self.get_Prob_H( self._current_hypergraph)
         for val in _result[0]: pass
         _best_hyperprior = val
@@ -465,40 +468,40 @@ class Hypergraph_Reconstructor:
         ### run for a set amount of iterations
         
         i               = 0
-        failed_attempts = 0
+        self._iter_failed_attempts = 0
         start_time      = \
-        last_successful_it_time = \
+        self._last_successful_iter_time = \
         last_print_time = time_ns()
         print_time_fail_interval = 15000000000 # 15 seconds
         next_print_time_fail = last_print_time + print_time_fail_interval
         while i < _ITERATIONS:
             
-            out               = self.find_candidate_hypergraph(0, self._it_pass_data)
+            out               = self.find_candidate_hypergraph(0, self._iter_pass_data)
             
             if out[0]:
 
-                t                 = self._it_pass_data["end_time"]
-                iteration_runtime = t - last_successful_it_time
+                t                 = self._iter_pass_data["end_time"]
+                iteration_runtime = t - self._last_successful_iter_time
                 self._iter_runtimes.append(iteration_runtime)
                 self._iter_runtimes_summed.append(iteration_runtime + self._iter_runtimes_summed[-1])
 
                 ## Logging
-                s = self._it_pass_data["history_str"]
+                s = self._iter_pass_data["history_str"]
                 self.add_to_history(s)
-                self._history_num_arr.append(self._it_pass_data["history_num_arr"])
+                self._history_num_arr.append(self._iter_pass_data["history_num_arr"])
                 sub_hyperedge = out[3]
                 count         = out[4]
                 self.add_to_history_exact((list(sub_hyperedge), count))
 
                 ## Print the status at most once every 3 seconds and also save to output logs
                 if t - last_print_time > 3000000000:
-                    s = f"{iteration_runtime // 1000000} ms elapsed until this iteration.\n" + self._it_pass_data["log_str"]
+                    s = f"{iteration_runtime // 1000000} ms elapsed until this iteration.\n" + self._iter_pass_data["log_str"]
                     print(s)
                     self.add_to_log(s)
                     last_print_time = t
                 
-                last_successful_it_time  = t
-                failed_attempts          = 0
+                self._last_successful_iter_time  = t
+                self._iter_failed_attempts          = 0
                 _current_hypergraph      = out[1]
                 gen                      = out[2]
                 for val in gen: pass
@@ -544,15 +547,17 @@ class Hypergraph_Reconstructor:
                     autostop()
                     break
             else:
-                failed_attempts         += 1
-                if failed_attempts >= 10000:
+                self._iter_failed_attempts  += 1
+                ## Check for the odd dataset that never gets iterated beyond initialisation
+                if self._iter_failed_attempts >= 10000:
                     s = f"[!] 10000 failed attempts reached at iteration {self._iteration}. Auto-stopping algorithm.\n"
+                    self._iter_failed_attempts  = 0
                     autostop(s)
                     break
                 ## Print the status at most once every 15 seconds and also save to output logs
                 t = time_ns()
                 if t > next_print_time_fail:
-                    s = f"15s elapsed. No successes after {failed_attempts} failed attempts on iteration {self._iteration}.\n" + self._it_pass_data.get("log_str", "No succeed iterations yet.")
+                    s = f"15s elapsed. No successes after {self._iter_failed_attempts} failed attempts on iteration {self._iteration}.\n" + self._iter_pass_data.get("log_str", "No succeed iterations yet.")
                     print(s)
                     next_print_time_fail = t + print_time_fail_interval
                 ## auto-stop based on runtime
@@ -560,14 +565,15 @@ class Hypergraph_Reconstructor:
                     mean                     = self._iter_runtimes_summed[self._iteration] / self._iteration
                     sd                       = stdev(self._iter_runtimes, mean)
                     if iteration_runtime > mean + 2*sd:
-                        if failed_attempts > failure_autostop_threshold:
-                            s = f"[!] ... due to {failed_attempts} failed attempts after {iteration_runtime} ns with sample mean {mean} and stdeviation {sd}"
+                        if self._iter_failed_attempts > self._iter_failure_autostop_threshold:
+                            s = f"[!] ... due to {self._iter_failed_attempts} failed attempts after {iteration_runtime} ns with sample mean {mean} and stdeviation {sd}"
                             autostop(s)
                             print(s)
                             self.add_to_log(s)
                             break
                         else:
-                            print(f"(!) {failed_attempts} timed-out attempts by 2 * std deviation, iteration {self._iteration}")
+                            s = f"(!) {self._iter_failed_attempts} timed-out attempts by 2 * std deviation, iteration {self._iteration}"
+                            print(s)
 
 
         end_time   = time_ns()
