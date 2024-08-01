@@ -12,8 +12,6 @@ from helper_functions import *
 # graph  size: number of edges
 # graph order: number of vertices
 # How to program an automatic detection for reaching an equilibrium that only fluctuates little?
-############### Helpers #################
-############### Helpers #################
 
 ############### Helpers #################
 
@@ -55,23 +53,23 @@ class Hypergraph_Reconstructor:
         self._it_pass_data           = dict()
 
         ## the current hypergraph's tally of hyperedges of size k, ordered by index
-        # i.e. [2] holds the tally of 2-edges, [3] holds the tally of 3-edges etc.
+        ## i.e. [2] holds the tally of 2-edges, [3] holds the tally of 3-edges etc.
         self._E_current              = []
         self._diff_E                 = (0, 0)
 
         ## For use in automatically stopping the algorithm.
-        # Reasoning: When this algorithm approaches an equilibrium, the average of changes in
-        # hyperedge counts, - regardless of the size of the hyperedge, will approach zero.
-        # For this, use an array as a rolling window to keep track of the changes in the tally of all sizes of hyperedges
-        # in the past 100 iterations, sum them up, and use an error margin of 5% to stop the algorithm automatically.
+        ## Reasoning: When this algorithm approaches an equilibrium, the average of changes in
+        ## hyperedge counts, - regardless of the size of the hyperedge, will approach zero.
+        ## For this, use an array as a rolling window to keep track of the changes in the tally of all sizes of hyperedges
+        ## in the past 100 iterations, sum them up, and use an error margin of 5% to stop the algorithm automatically.
 
-        # _stopping_arr needs a more specific dimension that is the same as _E_k or _E_current, to be defined later together with _maximal_hyperedge_size
-        # (v, k) v takes the two values  [-1, +1], k takes the int values [0, k_max] where k_max is the _maximal_hyperedge_size
-        # At every iteration, from the array _rolling_window, take the tuple (v, k) pointed to by index _rw_index,
-        # subtract the value v from the array _stopping_arr at index k, replace (v, k) with the change in _E_k that leads to _E_current,
-        #  add this new value v_new to _stopping_arr at k_new given by _diff_E
-        # advance _rw_index, and wrap back around if past index bounds,
-        # calculate the folded sum of _stopping_arr and stop the algorithm when it approaches 0.
+        ## _stopping_arr needs a more specific dimension that is the same as _E_k or _E_current, to be defined later together with _maximal_hyperedge_size
+        ## (v, k) v takes the two values  [-1, +1], k takes the int values [0, k_max] where k_max is the _maximal_hyperedge_size
+        ## At every iteration, from the array _rolling_window, take the tuple (v, k) pointed to by index _rw_index,
+        ## subtract the value v from the array _stopping_arr at index k, replace (v, k) with the change in _E_k that leads to _E_current,
+        ##  add this new value v_new to _stopping_arr at k_new given by _diff_E
+        ## advance _rw_index, and wrap back around if past index bounds,
+        ## calculate the folded sum of _stopping_arr and stop the algorithm when it approaches 0.
         self._stopping_arr           = []
         self._rw_size                = 100
         self._rolling_window         = [ (0, 0) for i in range(0, self._rw_size) ]
@@ -79,12 +77,12 @@ class Hypergraph_Reconstructor:
         self._stopping_sum           = 0
         self._auto_stopped           = False
 
-        # Runtime-based auto-stop, used for big graphs taking longer than a few seconds per accepted iteration change
-        # this uses probability- and normal distribution -based stopping
+        ## Runtime-based auto-stop, used for big graphs taking longer than a few seconds per accepted iteration change
+        ## this uses probability- and normal distribution -based stopping
         self._iter_runtimes          = []
         self._iter_runtimes_summed   = [0]
 
-        # keeping running stats
+        ## keeping running stats
         self._print_period           = print_period # used to control printing to console only periodically, static
         self._print_clock            = time_ns()
         self._iteration              = 0
@@ -114,7 +112,7 @@ class Hypergraph_Reconstructor:
         return self._log
 
 
-    # Sets (or resets) the current hypergraph using some initialisation method on the original graph
+    ## Sets (or resets) the current hypergraph using some initialisation method on the original graph
     def init_hypergraph(self) -> None:
 
         _init_E           = dict() # Keeps track of the count of all h-edges sized n in the initial state, refer to self._history
@@ -126,23 +124,23 @@ class Hypergraph_Reconstructor:
             fs = frozenset( clique )
             self._current_hypergraph[ fs ] = 1 # + _h_graph.get(fs, 0)
 
-            # simultaneously find out maximal hyperedge size _L
+            ## simultaneously find out maximal hyperedge size _L
             _edge_size = len(clique)
             current_E_arr_wip.append(_edge_size)
             if _edge_size > self._maximal_hyperedge_size:
                 self._maximal_hyperedge_size = _edge_size
 
-            # also fill in the first row of self._history
+            ## also fill in the first row of self._history
             _init_E[_edge_size] = _init_E.get(_edge_size, 0) + 1
-        # continues ...
-        # logs the initial state in the text file
+        ## continues ...
+        ## logs the initial state in the text file
         h_line = ""
         for i in range(self._maximal_hyperedge_size + 1):
             h_line += f"{_init_E.get(i, 0)} "
         self._history.append(h_line)
         self._history_exact.append(h_line)
         self._history_num_arr.append([_init_E.get(i, 0) for i in range(self._maximal_hyperedge_size + 1)])
-        # inits the stopping algorithm based on the moving window
+        ## inits the stopping algorithm based on the moving window
         self._stopping_arr  = [ 0 for i in range(0, self._maximal_hyperedge_size + 1) ]
         self._E_current     = [ 0 for i in range(0, self._maximal_hyperedge_size + 1) ]
         for e_size in current_E_arr_wip:
@@ -171,8 +169,8 @@ class Hypergraph_Reconstructor:
             adj[ _fs] = 1
         return
 
-    # helper function, finds the adjacency list (dictionary) of a graph_tool.Graph
-    # returns a dict( frozenset() ) -> int Z+
+    ## helper function, finds the adjacency list (dictionary) of a graph_tool.Graph
+    ## returns a dict( frozenset() ) -> int Z+
     def get_adjacency_from_Graph(self, graph) -> dict:
 
         assert type(graph) == graph_tool.Graph, "the input is not a Graph object"
@@ -183,8 +181,8 @@ class Hypergraph_Reconstructor:
             _adj_graph[ frozenset( [ _src, _trg] ) ] = 1
         return _adj_graph
 
-    # helper function, finds the adjacency list (dictionary) of a hypergraph projected down
-    # returns a dict( frozenset() ) -> int Z+
+    ## helper function, finds the adjacency list (dictionary) of a hypergraph projected down
+    ## returns a dict( frozenset() ) -> int Z+
     def get_adjacency_from_hypergraph(self, hypergraph) -> dict():
 
         assert type(hypergraph) == dict, "hypergraph is not a dictionary type"
@@ -194,11 +192,11 @@ class Hypergraph_Reconstructor:
                 self.project_hyperedge(hyperedge, _adj_G_projected)
         return _adj_G_projected
 
-    # Checks whether H projects to G, (!) note that you need to get both adjacency matrices of G and H to input into this
-    # returns 0 or 1
+    ## Checks whether H projects to G, (!) note that you need to get both adjacency matrices of G and H to input into this
+    ## returns 0 or 1
     def get_Prob_G_if_H(self, adj_G_projected):
-        # take a hypergraph and map all of its hyperedges into pairwise interactions and store them in adj_G_projected
-        # take the original graph's edges, turn that into adj_G_orig and compare the two adjacency lists
+        ## take a hypergraph and map all of its hyperedges into pairwise interactions and store them in adj_G_projected
+        ## take the original graph's edges, turn that into adj_G_orig and compare the two adjacency lists
         if self._adj_graph == adj_G_projected:
             return 1
         else:
@@ -212,29 +210,29 @@ class Hypergraph_Reconstructor:
         _L       = self._maximal_hyperedge_size
         _N       = self._graph_order
 
-        # subrountine here ------
-        # -- equation (5)
+        ## subrountine here ------
+        ## -- equation (5)
         _Ed = dict()
-        # -- equation (7)
+        ## -- equation (7)
         _Zd = dict()
-        # iterate through all hyperedges and find
-        # -> Z_k, here collectively in an array _Z[] length _L +1, note the indexing: _Z[i] gives Z_i
-        # -> E_k, -ii-
+        ## iterate through all hyperedges and find
+        ## -> Z_k, here collectively in an array _Z[] length _L +1, note the indexing: _Z[i] gives Z_i
+        ## -> E_k, -ii-
         for hyperedge in hypergraph:
-            # (5)
+            ## (5)
             _edge_size = len(hyperedge)
             _Ed[ _edge_size] = _Ed.get( _edge_size, 0) + hypergraph[ hyperedge]
-            # (7)
+            ## (7)
             _Zd[ _edge_size] = _Zd.get( _edge_size, 1) * factorial( hypergraph[ hyperedge])
-        # turn into quickly accessible array
+        ## turn into quickly accessible array
         _E = [ _Ed.get( i,0) for i in range(0, _L+1)]   # again, note the indexing that includes 2 dummy entries [0] and [1]
         _Z = [ _Zd.get( i,1) for i in range(0, _L+1)]
-        # -----------------------
+        ## -----------------------
 
         new_mu = _E_total / ( _L - 1)
         if self._mu < new_mu:
             self._mu = new_mu
-        # and calculate product
+        ## and calculate product
         #print("-- _mu: %d = %d / ( %d - 1) -----\n" % ( _mu, _E_total, _L ) )
 
         ## helper
@@ -245,7 +243,7 @@ class Hypergraph_Reconstructor:
             ### realisation:
             ### you don't really need absolute probabilities, and in this situation it is untenable to calculate those miniscule probabilities. You can, instead, calculate their relative probabilities during MCMC
             def get_diminishing_product(k):
-                # factorial( _E[k]) / pow(comb( _N, k), _E[k])
+                ## factorial( _E[k]) / pow(comb( _N, k), _E[k])
                 bottom_  = comb( _N, k)
                 E_i_     = _E[k]
                 product_ = 1
@@ -285,9 +283,9 @@ class Hypergraph_Reconstructor:
     ## Markov Chain Monte Carlo: Metropolis-Hastings algorithm, find new hypergraph candidates, section (C)
     ## returns a tuple (Bool, dict( frozenset() ) -> int Z+, float )
     ## where
-     # Bool is True when the hypergraph is different from the input
-     #
-     # float is the hyperprior of the hypergraph
+    ## Bool is True when the hypergraph is different from the input
+    ##
+    ## float is the hyperprior of the hypergraph
     def find_candidate_hypergraph(self, index=0, pass_data=dict()):
 
         _N  = self._graph_order
@@ -297,7 +295,7 @@ class Hypergraph_Reconstructor:
             raise Exception("Error: hypergraph size 0... Have you initialized the hypergraph?")
             #return (False, hypergraph, self.get_Prob_H( hypergraph)[0] )
         
-        # variables to display status
+        ## variables to display status
         start_time = time_ns()
 
         ## Find maximal hyperedge
@@ -322,7 +320,7 @@ class Hypergraph_Reconstructor:
         ## connect the small graph according to the original graph
         for v in range( len( _largest)):
             for nv in self._g.vertex( _mapping[ v]).out_neighbours():
-                # note: nv type is Vertex. Convert to int to use as index
+                ## note: nv type is Vertex. Convert to int to use as index
                 _target = _inv_map.get(int(nv), -1)
                 if _target != -1:
                     _small_G.add_edge( v, _target)
@@ -360,7 +358,7 @@ class Hypergraph_Reconstructor:
                 termQ = 2
             else:
                 termQ = 1
-        # if it's now 0, clean up
+        ## if it's now 0, clean up
         _count = _new_hypergraph[ _sub_hyperedge]
         if _count < 1:
             _new_hypergraph.pop( _sub_hyperedge)
@@ -370,13 +368,13 @@ class Hypergraph_Reconstructor:
 
         acceptance_rate = 1
         for k in range(2, _L+1):
-            # termQ  declared earlier
+            ## termQ  declared earlier
             term1 = factorial_div_factorial( _E_new[k], self._E_current[k])
             term2 = self._Z_current[k] / _Z_new[k]
             term3 = pow( (comb( _N, k) * (1/ self._mu) +1), self._E_current[k] - _E_new[k])
             prod  = termQ * term1 * term2 * term3
             acceptance_rate *= prod
-            #print(f"{prod} ", end = '') # debug
+            #print(f"{prod} ", end = '') ## debug
 
         _cointoss  = random.random() < acceptance_rate
 
@@ -417,7 +415,7 @@ class Hypergraph_Reconstructor:
             pass_data["end_time"]   = time_ns()
             pass_data["log_str"] = f"Iteration {self._iteration} New: {str(_E_new)} diff:{str(self._diff_E)} Auto-stop state: {self._stopping_arr}; "
 
-            # data for auto-stop
+            ## data for auto-stop
             diff_arr            = [ _E_new[i] - self._E_current[i] for i in range(0, len( _E_new)) ]
             for i in range(0, len(diff_arr)):
                 e_size = diff_arr[i]
@@ -441,7 +439,7 @@ class Hypergraph_Reconstructor:
             self.init_hypergraph()
             self.status()
 
-        failure_autostop_threshold = 100 # activates after failing this many attempts at accepting a candidate h-graph # TODO: Arbitrary
+        failure_autostop_threshold = 20 # activates after failing this many attempts at accepting a candidate h-graph # TODO: Arbitrary
 
         _result          = self.get_Prob_H( self._current_hypergraph)
         for val in _result[0]: pass
@@ -454,7 +452,7 @@ class Hypergraph_Reconstructor:
             _min_iterations = int(min_iterations)
 
         ### evidence, normalization, - unused due to infinitesimal values
-        # add each iteration of P_G_H * P_H to this array, and then sum them up at the end
+        ## add each iteration of P_G_H * P_H to this array, and then sum them up at the end
         #self._P_G_arr = [ ( _best_hypergraph, _best_hyperprior) ]
         #self._P_G     = 0
 
@@ -603,7 +601,7 @@ class Hypergraph_Reconstructor:
         data_to_write = ""
         for item in self._log:
             data_to_write += str(item) + '\n'
-        # additional final details
+        ## additional final details
         data_to_write += f"Total iterations {self._iteration}\n"
         data_to_write += f"Total algorithm runtime {self._runtime} ns\n  or {self._runtime / 1000000} ms"
 
@@ -643,11 +641,11 @@ class Hypergraph_Reconstructor:
     ## for use when the original graph loaded consists of unconnected subgraphs, this creates a new graph that finds the largest subgraph out of the original graph
     ## returns a new Graph object
     def get_largest_subgraph(self):
-        # this holds the order of the subgraph found when iterating a search started at a vertex i
+        ## this holds the order of the subgraph found when iterating a search started at a vertex i
         orders_dict = dict()
         for i in range(self._graph_order):
             if orders_dict.get(i, 0) == 0:
-                # DFS traversal
+                ## DFS traversal
                 order           = 1
                 traversed_nodes = [i]
                 to_be_traversed = [int(vertex) for vertex in self._g.vertex(i).out_neighbours()]
@@ -659,7 +657,7 @@ class Hypergraph_Reconstructor:
                         for vertex in self._g.vertex(node).out_neighbours(): to_be_traversed.append(int(vertex))
                 for node in traversed_nodes:
                     orders_dict[node] = order
-        # TODO: turn this dict into a new graph object
+        ## TODO: turn this dict into a new graph object
 
     ## Prints the current state of the hypergraph
     def status(self):
