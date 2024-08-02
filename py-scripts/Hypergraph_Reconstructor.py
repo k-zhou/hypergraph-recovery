@@ -301,14 +301,17 @@ class Hypergraph_Reconstructor:
             #return (False, hypergraph, self.get_Prob_H( hypergraph)[0] )
         
         ## variables to display status
-        start_time = time_ns()
+        pass_data["start_time"]   = \
+        last_print_time           = time_ns()
+        print_time_fail_interval  = 15000000000 # 15 seconds
+        next_print_time_fail      = last_print_time + print_time_fail_interval
 
         ## Find maximal hyperedge
         _new_hypergraph = self._current_hypergraph.copy()
-        _largest        = frozenset({})
-        _size_largest   = len( _largest)
+        _largest        = frozenset()
+        _size_largest   = 0
         for hyperedge in _new_hypergraph:
-            if len( hyperedge) > _size_largest:
+            if len( hyperedge) > _size_largest and _new_hypergraph[hyperedge] > 0:
                 _largest      = hyperedge
                 _size_largest = len( _largest)
 
@@ -336,103 +339,125 @@ class Hypergraph_Reconstructor:
             if len(mq) > k:
                 k = len(mq)
 
-        ## select a random sub-hyperedge within this hyperedge (can select itself) ...
-        l = 1
-        if k > 1:
-            l = random.randint( 2, k)
-        _sub_hyperedge = _largest
-        if l < k:
-            _set   =  set( _sub_hyperedge)
-            _l_set = list( _sub_hyperedge)
-            while len( _set) > l:
-                _set.discard( _l_set[ random.randint( 0, _size_largest -1)] )
-            _sub_hyperedge = frozenset( _set)
-
-        ## ... and change the frequency of _sub_hyperedge. If its count is 0, increase by 1, else increase or decrease by 1 with 50% prob each
-        #print(f"sub { _sub_hyperedge} : { _new_hypergraph.get( _sub_hyperedge, 0)}", end = '')
-        termQ = 1 # for checking { acceptance_rate }, pre-print eqn # 15
-        if _new_hypergraph.get( _sub_hyperedge, 0) < 1:
-            _new_hypergraph[ _sub_hyperedge] = 1
-            termQ = 0.5
-        else:
-            if random.random() < 0.5:
-                _new_hypergraph[ _sub_hyperedge] += 1
-            else:
-                _new_hypergraph[ _sub_hyperedge] -= 1
-            if _new_hypergraph.get( _sub_hyperedge, 0) == 0:
-                termQ = 2
-            else:
-                termQ = 1
-        ## if it's now 0, clean up
-        _count = _new_hypergraph[ _sub_hyperedge]
-        if _count < 1:
-            _new_hypergraph.pop( _sub_hyperedge)
-
-        ## calculate the hyperprior P(H) and compare to previous
-        ( _P_H_new, _E_new, _Z_new) = self.get_Prob_H( _new_hypergraph)
-
-        acceptance_rate = 1
-        for k in range(2, _L+1):
-            ## termQ  declared earlier
-            term1 = factorial_div_factorial( _E_new[k], self._E_current[k])
-            term2 = self._Z_current[k] / _Z_new[k]
-            term3 = pow( (comb( _N, k) * (1/ self._mu) +1), self._E_current[k] - _E_new[k])
-            prod  = termQ * term1 * term2 * term3
-            acceptance_rate *= prod
-            #print(f"{prod} ", end = '') ## debug
-
-        _cointoss  = random.random() < acceptance_rate
-
-        ## check whether P(G|H) = 1 holds
-        _projects_to_graph = self.get_Prob_G_if_H( self.get_adjacency_from_hypergraph( _new_hypergraph))
-
-        ## text for printing progress status
-        # s1 = f"\nIteration {self._iteration}\n" + \
-        #      f"hyperedge { _sub_hyperedge} : { _new_hypergraph.get( _sub_hyperedge, 0)}  " + \
-        #      f"acceptance rate { acceptance_rate}, " + \
-        #      f"len { len( _new_hypergraph)}\n"
-        #     #acceptance rate <- coin toss:{ _cointoss}")
-        #     #f"Old E:{ _E_current}") # Z:{[ '{:.1E}'.format(val) for val in _Z_current ]}"
-        #     #f"New E:{ _E_new    }") # Z:{[ '{:.1E}'.format(val) for val in _Z_new     ]}"
-        # s2 = f"New E:{ _E_new    } Difference:{[ (_E_new[i] - self._E_current[i]) for i in range(len(_E_new))]}\n"
-        # pass_data["progress_str"] = s1 + s2
-
-        ## check acceptance. If heads, record the change, otherwise keep the previous hypergraph
-        if _projects_to_graph and _cointoss:
+        ## loop until an accepted move is found; if 10000 attempts have been made, forcefully quit
+        attempts       = 0
+        while attempts < 10000:
+            ## select a random sub-hyperedge within this hyperedge (can select itself) ...
+            _sub_hyperedge = _largest
+            l = 1
+            if k > 1:
+                l = random.randint( 2, k)
+            if l < k:
+                _set   =  set( _sub_hyperedge)
+                _l_set = list( _sub_hyperedge)
+                while len( _set) > l:
+                    _set.discard( _l_set[ random.randint( 0, _size_largest -1)] )
+                _sub_hyperedge = frozenset( _set)
             
-            ## Data to pass outwards
-            ## Prepares data to add to history. Refer to initialisation of self._history
-            change_i = 0
-            change_sign = ""
-            for i in range(len(_E_new)):
-                change = _E_new[i] - self._E_current[i]
-                if change == 0:
-                    continue
+
+            ## ... and change the frequency of _sub_hyperedge in the original hypergraph. 
+            ## If its count is 0, increase by 1, else increase or decrease by 1 with 50% prob each
+
+            #print(f"sub { _sub_hyperedge} : { _new_hypergraph.get( _sub_hyperedge, 0)}", end = '')
+            _prev_count = _new_hypergraph.get( _sub_hyperedge, 0)
+            termQ       = 1 # for checking { acceptance_rate }, pre-print eqn # 15
+            if _new_hypergraph.get( _sub_hyperedge, 0) < 1:
+                _new_hypergraph[ _sub_hyperedge] = 1
+                termQ = 0.5
+            else:
+                if random.random() < 0.5:
+                    _new_hypergraph[ _sub_hyperedge] += 1
                 else:
-                    change_i = i
-                    if change == 1:
-                        change_sign = "+"
-                    else:
-                        change_sign = "-"
-                    break
-            pass_data["history_str"] = str(change_i) + ' ' + change_sign
-            pass_data["history_num_arr"] = _E_new.copy()
-            pass_data["end_time"]   = time_ns()
-            pass_data["log_str"] = f"Iteration {self._iteration} New: {str(_E_new)} diff:{str(self._diff_E)} Auto-stop state: {self._stopping_arr}; "
-
-            ## data for auto-stop
-            diff_arr            = [ _E_new[i] - self._E_current[i] for i in range(0, len( _E_new)) ]
-            for i in range(0, len(diff_arr)):
-                e_size = diff_arr[i]
-                if not e_size == 0:
-                    self._diff_E = (e_size, i)
-                    break
+                    _new_hypergraph[ _sub_hyperedge] -= 1
+                if _new_hypergraph.get( _sub_hyperedge, 0) == 0:
+                    termQ = 2
+                else:
+                    termQ = 1
             
-            self._E_current = _E_new
-            ( self._P_H_current, self._E_current, self._Z_current) = ( _P_H_new, _E_new, _Z_new)
-            return (True, _new_hypergraph, _P_H_new, _sub_hyperedge, _count)
-        else:
-            return (False, self._current_hypergraph, self._P_H_current, frozenset(), 0)
+            _count = _new_hypergraph[ _sub_hyperedge]
+
+            ## calculate the hyperprior P(H) and compare to previous
+            ( _P_H_new, _E_new, _Z_new) = self.get_Prob_H( _new_hypergraph)
+
+            acceptance_rate = 1
+            for k in range(2, _L+1):
+                ## termQ  declared earlier
+                term1 = factorial_div_factorial( _E_new[k], self._E_current[k])
+                term2 = self._Z_current[k] / _Z_new[k]
+                term3 = pow( (comb( _N, k) * (1/ self._mu) +1), self._E_current[k] - _E_new[k])
+                prod  = termQ * term1 * term2 * term3
+                acceptance_rate *= prod
+                #print(f"{prod} ", end = '') ## debug
+
+            _cointoss  = random.random() < acceptance_rate
+
+            ## check whether P(G|H) = 1 holds
+            _projects_to_graph = self.get_Prob_G_if_H( self.get_adjacency_from_hypergraph( _new_hypergraph))
+
+            ## text for printing progress status
+            # s1 = f"\nIteration {self._iteration}\n" + \
+            #      f"hyperedge { _sub_hyperedge} : { _new_hypergraph.get( _sub_hyperedge, 0)}  " + \
+            #      f"acceptance rate { acceptance_rate}, " + \
+            #      f"len { len( _new_hypergraph)}\n"
+            #     #acceptance rate <- coin toss:{ _cointoss}")
+            #     #f"Old E:{ _E_current}") # Z:{[ '{:.1E}'.format(val) for val in _Z_current ]}"
+            #     #f"New E:{ _E_new    }") # Z:{[ '{:.1E}'.format(val) for val in _Z_new     ]}"
+            # s2 = f"New E:{ _E_new    } Difference:{[ (_E_new[i] - self._E_current[i]) for i in range(len(_E_new))]}\n"
+            # pass_data["progress_str"] = s1 + s2
+
+            ## check acceptance. If heads, record the change, otherwise keep the previous hypergraph
+            if _projects_to_graph and _cointoss:
+                
+                ## if it's now 0, clean up
+                if _count < 1: _new_hypergraph.pop( _sub_hyperedge)
+
+                ## Data to pass outwards
+                ## Prepares data to add to history. Refer to initialisation of self._history
+                change_i = 0
+                change_sign = ""
+                for i in range(len(_E_new)):
+                    change = _E_new[i] - self._E_current[i]
+                    if change == 0:
+                        continue
+                    else:
+                        change_i = i
+                        if change == 1:
+                            change_sign = "+"
+                        else:
+                            change_sign = "-"
+                        break
+                pass_data["history_str"] = str(change_i) + ' ' + change_sign
+                pass_data["history_num_arr"] = _E_new.copy()
+                pass_data["end_time"]   = time_ns()
+                pass_data["log_str"] = f"Iteration {self._iteration} New: {str(_E_new)} diff:{str(self._diff_E)} Auto-stop state: {self._stopping_arr}; "
+
+                ## data for auto-stop
+                diff_arr            = [ _E_new[i] - self._E_current[i] for i in range(0, len( _E_new)) ]
+                for i in range(0, len(diff_arr)):
+                    e_size = diff_arr[i]
+                    if not e_size == 0:
+                        self._diff_E = (e_size, i)
+                        break
+                
+                self._E_current = _E_new
+                ( self._P_H_current, self._E_current, self._Z_current) = ( _P_H_new, _E_new, _Z_new)
+                found_accepted = True
+                return (True, _new_hypergraph, _P_H_new, _sub_hyperedge, _count)
+            else:
+                # restore the initial state and try again
+                _new_hypergraph[ _sub_hyperedge] = _prev_count
+                if _prev_count < 1: _new_hypergraph.pop( _sub_hyperedge)
+
+                ## Print the status at most once every 15 seconds (and also save to output logs)
+                t = time_ns()
+                if t > next_print_time_fail:
+                    s = f"15s elapsed. No successes after {attempts} failed attempts on iteration {self._iteration}.\n" + self._iter_pass_data.get("log_str", "No succeed iterations yet.")
+                    print(s)
+                    next_print_time_fail = t + print_time_fail_interval
+            
+            attempts += 1
+        ## Check for the odd dataset that never gets iterated beyond initialisation
+        return (False, self._current_hypergraph, self._P_H_current, frozenset(), 0)
 
     ## main algorithm version 2
     ## use this method to run the algorithm for a set amount of iterations
@@ -472,8 +497,8 @@ class Hypergraph_Reconstructor:
         start_time      = \
         self._last_successful_iter_time = \
         last_print_time = time_ns()
-        print_time_fail_interval = 15000000000 # 15 seconds
-        next_print_time_fail = last_print_time + print_time_fail_interval
+        # print_time_fail_interval = 15000000000 # 15 seconds
+        # next_print_time_fail = last_print_time + print_time_fail_interval
         while i < _ITERATIONS:
             
             out               = self.find_candidate_hypergraph(0, self._iter_pass_data)
@@ -501,7 +526,7 @@ class Hypergraph_Reconstructor:
                     last_print_time = t
                 
                 self._last_successful_iter_time  = t
-                self._iter_failed_attempts          = 0
+                self._iter_failed_attempts       = 0
                 _current_hypergraph      = out[1]
                 gen                      = out[2]
                 for val in gen: pass
@@ -538,7 +563,7 @@ class Hypergraph_Reconstructor:
                 
                 within_bounds = True
                 for tally in self._stopping_arr:
-                    if not (-2 < tally and tally < 2):
+                    if not (-3 < tally and tally < 3):
                         within_bounds = False
                         break
                 
@@ -546,25 +571,13 @@ class Hypergraph_Reconstructor:
                 if _autostop_enabled and i >= _min_iterations and within_bounds:
                     autostop()
                     break
-            else:
-                self._iter_failed_attempts  += 1
-                ## Check for the odd dataset that never gets iterated beyond initialisation
-                if self._iter_failed_attempts >= 10000:
-                    s = f"[!] 10000 failed attempts reached at iteration {self._iteration}. Auto-stopping algorithm.\n"
-                    self._iter_failed_attempts  = 0
-                    autostop(s)
-                    break
-                ## Print the status at most once every 15 seconds and also save to output logs
-                t = time_ns()
-                if t > next_print_time_fail:
-                    s = f"15s elapsed. No successes after {self._iter_failed_attempts} failed attempts on iteration {self._iteration}.\n" + self._iter_pass_data.get("log_str", "No succeed iterations yet.")
-                    print(s)
-                    next_print_time_fail = t + print_time_fail_interval
+
                 ## auto-stop based on runtime
                 if self._iteration > 10:
                     mean                     = self._iter_runtimes_summed[self._iteration] / self._iteration
                     sd                       = stdev(self._iter_runtimes, mean)
                     if iteration_runtime > mean + 2*sd:
+                        self._iter_failed_attempts  += 1
                         if self._iter_failed_attempts > self._iter_failure_autostop_threshold:
                             s = f"[!] ... due to {self._iter_failed_attempts} failed attempts after {iteration_runtime} ns with sample mean {mean} and stdeviation {sd}"
                             autostop(s)
@@ -574,6 +587,11 @@ class Hypergraph_Reconstructor:
                         else:
                             s = f"(!) {self._iter_failed_attempts} timed-out attempts by 2 * std deviation, iteration {self._iteration}"
                             print(s)
+            else:
+                ## Check for the odd dataset that never gets iterated beyond initialisation
+                s = f"[!] 10000 failed attempts reached at iteration {self._iteration}. Auto-stopping algorithm.\n"
+                autostop(s)
+                break
 
 
         end_time   = time_ns()
