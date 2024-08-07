@@ -719,11 +719,9 @@ class Hypergraph_Reconstructor:
                 level             = 0
                 tasklist_by_level = dict()
                 tasklist_by_level[level + 1] = tuple([ n for n in self._g.vertex(u).all_neighbours()])
-                #print([int(e) for e in tasklist_by_level[level + 1]]) #debug
                 ## iter n
                 while tasklist_by_level.get(level+1, False):
                     level += 1
-                    #print("Level", level) #debug
                     complete_tasklist = set()
                     for v in tasklist_by_level[level]:
                         if not traversed.get(int(v), False):
@@ -731,24 +729,11 @@ class Hypergraph_Reconstructor:
                             subgraph.append(int(v))
                             complete_tasklist.update([ n for n in self._g.vertex(v).all_neighbours()])
                     tasklist_by_level[level + 1] = tuple(complete_tasklist)
-                    #print([int(e) for e in tasklist_by_level[level + 1]]) #debug
                 output.append(subgraph)
-                #print(f"Ends at level {level} with {len(subgraph)} nodes in subgraph #{num_subgraphs-1}") # debug
-                #print("Ending loop at", level) #debug
-        ## check all nodes if traversed and return
-        
-        ## this section is redundant now and acts only as error-checking
-        # untraversed = set()
-        # for i in range(self._graph_order):
-        #     if not traversed.get(i, False):
-        #         untraversed.add(i)
-        # if len(untraversed) > 0: print("[!] Unexpected untraversed: ", untraversed)
-        
+
         if num_subgraphs == 1:
-            #print("Connected") #debug
             return True
         else:
-            #print("Not connected: ", [len(subgraph) for subgraph in output]) #debug
             return False
         
         
