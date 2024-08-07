@@ -689,6 +689,70 @@ class Hypergraph_Reconstructor:
                     orders_dict[node] = order
         ## TODO: turn this dict into a new graph object
 
+    ## Tests whether the graph is connected, with BFS
+    def test_connectedness(self, output=[]) -> bool:
+        '''
+        Generates / appends a list of lists to the "output" variable.
+        Each sublist is a connected subgraph.
+
+        Iterates through all graph vertices in order. If a vertex has not been traversed yet, 
+            start a new sublist from that node.
+        
+        Loop:
+        At level n
+        select node in tasklist of level n
+        mark node as traversed
+        select its neighbours as the next to be traversed in level n+1
+
+        If total number of sublists is larger than 1, return False as the graph is not connected.
+        Otherwise return True.
+        '''
+        traversed     = dict()
+        num_subgraphs = 0
+                
+        for u in range(self._graph_order):
+            if not traversed.get(int(u), False):
+                subgraph          = [int(u)]
+                num_subgraphs     += 1
+                ## iter 0
+                traversed[u]      = True
+                level             = 0
+                tasklist_by_level = dict()
+                tasklist_by_level[level + 1] = tuple([ n for n in self._g.vertex(u).all_neighbours()])
+                #print([int(e) for e in tasklist_by_level[level + 1]]) #debug
+                ## iter n
+                while tasklist_by_level.get(level+1, False):
+                    level += 1
+                    #print("Level", level) #debug
+                    complete_tasklist = set()
+                    for v in tasklist_by_level[level]:
+                        if not traversed.get(int(v), False):
+                            traversed[int(v)] = True
+                            subgraph.append(int(v))
+                            complete_tasklist.update([ n for n in self._g.vertex(v).all_neighbours()])
+                    tasklist_by_level[level + 1] = tuple(complete_tasklist)
+                    #print([int(e) for e in tasklist_by_level[level + 1]]) #debug
+                output.append(subgraph)
+                #print(f"Ends at level {level} with {len(subgraph)} nodes in subgraph #{num_subgraphs-1}") # debug
+                #print("Ending loop at", level) #debug
+        ## check all nodes if traversed and return
+        
+        ## this section is redundant now and acts only as error-checking
+        # untraversed = set()
+        # for i in range(self._graph_order):
+        #     if not traversed.get(i, False):
+        #         untraversed.add(i)
+        # if len(untraversed) > 0: print("[!] Unexpected untraversed: ", untraversed)
+        
+        if num_subgraphs == 1:
+            #print("Connected") #debug
+            return True
+        else:
+            #print("Not connected: ", [len(subgraph) for subgraph in output]) #debug
+            return False
+        
+        
+
     ## Prints the current state of the hypergraph
     def status(self):
         s = f"--- Status of {self._filename} ---\n"    + \
