@@ -666,9 +666,11 @@ class Hypergraph_Reconstructor:
         write_to_file(fname, data_to_write)
         return
     
+    ## Graph-related methods
+
     ## for use when the original graph loaded consists of unconnected subgraphs, this creates a new graph that finds the largest subgraph out of the original graph
     ## returns a new Graph object
-    def get_largest_subgraph(self):
+    def get_largest_subgraph(self): # -> Graph
         ## this holds the order of the subgraph found when iterating a search started at a vertex i
         orders_dict = dict()
         for i in range(self._graph_order):
