@@ -122,21 +122,23 @@ def dict_fs_to_txt(dict_to_save) -> str:
     return out_str
 
 # opens a file and reads the hypergraph data to object variable
-def read_dict_fs_to_var(filename, dict_var) -> bool:
+def read_hypergraph_from_file(filename="filename", dict_var=dict()) -> bool:
     with open(filename, mode='rt', encoding="utf-8") as fr:
         line = fr.readline()
         # parse line and convert back to hyperedge
         while(line):
             split = line.split(' ')
             s = set()
+            n = 0
             for element in split:
                 try: 
-                    s.add(int(element))
+                    n = int(element)
+                    s.add(n)
                 except:
                     s = set()
                     break
             if len(s) >= 2:
-                n = s.pop()
+                s.remove(n)
                 dict_var[frozenset(s)] = n
             line = fr.readline()
     return True
