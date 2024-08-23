@@ -18,12 +18,12 @@ from helper_functions import *
 ################ Main ################
 class Hypergraph_Reconstructor:
 
-    def init_hypergraph (self               ) -> None: pass
-    def add_to_history  (self, str_data = "") -> None: pass
-    def add_to_history_exact(self, data = frozenset()) -> None: pass
-    def add_to_log      (self, str_data = "") -> None: pass
+    def init_hypergraph (self          ) -> None: pass
+    def add_to_history  (self, str_data) -> None: pass
+    def add_to_history_exact(self, data) -> None: pass
+    def add_to_log      (self, str_data) -> None: pass
 
-    def __init__(self, filename, print_period = 1):
+    def __init__(self, filename, print_period=1):
 
         self._filename = filename
         try:
@@ -165,7 +165,7 @@ class Hypergraph_Reconstructor:
 
     ## helper function, projects a single hyperedge to edges, to the provided adjacency list
     ## returns void
-    def project_hyperedge(self, hyperedge, adj ):
+    def project_hyperedge(self, hyperedge, adj):
 
         assert type( hyperedge) == frozenset, "_hyperedge is not a frozenset"
         _gen = combinations( hyperedge, 2)
@@ -291,7 +291,9 @@ class Hypergraph_Reconstructor:
     ## Bool is True when the hypergraph is different from the input
     ##
     ## float is the hyperprior of the hypergraph
-    def find_candidate_hypergraph(self, index=0, pass_data=dict()):
+    def find_candidate_hypergraph(self, index=0, pass_data=None):
+
+        if pass_data == None: pass_data = dict()
 
         _N  = self._graph_order
         _L  = self._maximal_hyperedge_size
@@ -461,7 +463,7 @@ class Hypergraph_Reconstructor:
 
     ## main algorithm version 2
     ## use this method to run the algorithm for a set amount of iterations
-    def run_algorithm(self, iterations = 100, autostop = True, min_iterations = None):
+    def run_algorithm(self, iterations=100, autostop=True, min_iterations=None):
 
         ## needs init_hypergraph() to be run first, otherwise will create unexpected behaviour
         if self._hypergraph_initiated != 1:
@@ -605,27 +607,29 @@ class Hypergraph_Reconstructor:
     
     ## logging
 
-    def add_to_history(self, str_data = "") -> None:
+    def add_to_history(self, str_data=None) -> None:
+        if str_data == None: str_data = ""
         lines = [] # allows for passing lists of strings
         lines.append(str_data)
         for line in lines:
             self._history.append(line)
 
-    def add_to_history_exact(self, data = frozenset()) -> None:
+    def add_to_history_exact(self, data=None) -> None:
+        if data == None: data = frozenset()
         lines = [] # allows for passing lists of strings
         lines.append(str(data))
         for line in lines:
             self._history_exact.append(line)
 
-    def add_to_log(self, str_data = "") -> None:
+    def add_to_log(self, str_data=None) -> None:
+        if str_data == None: str_data = ""
         lines = [] # allows for passing lists of strings
         lines.append(str_data)
         for line in lines:
             self._log.append(line)
 
-    def output_to_log(self, fname = None) -> None:
-        if fname == None:
-            fname = self._file_path + self._filename_only + "(log)" + ".txt"
+    def output_to_log(self, fname=None) -> None:
+        if fname == None: fname = self._file_path + self._filename_only + "(log)" + ".txt"
         data_to_write = ""
         for item in self._log:
             data_to_write += str(item) + '\n'
@@ -636,9 +640,8 @@ class Hypergraph_Reconstructor:
         write_to_file(fname, data_to_write)
         return
     
-    def output_history_to_log(self, fname = None) -> None:
-        if fname == None:
-            fname = self._file_path + self._filename_only + "(history)" + ".txt"
+    def output_history_to_log(self, fname=None) -> None:
+        if fname == None: fname = self._file_path + self._filename_only + "(history)" + ".txt"
         data_to_write = ""
         for item in self._history:
             data_to_write += str(item) + '\n'
@@ -646,9 +649,8 @@ class Hypergraph_Reconstructor:
         write_to_file(fname, data_to_write)
         return
     
-    def output_history_exact_to_log(self, fname = None) -> None:
-        if fname == None:
-            fname = self._file_path + self._filename_only + "(history_exact)" + ".txt"
+    def output_history_exact_to_log(self, fname=None) -> None:
+        if fname == None: fname = self._file_path + self._filename_only + "(history_exact)" + ".txt"
         data_to_write = ""
         for item in self._history_exact:
             data_to_write += str(item) + '\n'
@@ -656,9 +658,8 @@ class Hypergraph_Reconstructor:
         write_to_file(fname, data_to_write)
         return
 
-    def output_hypergraph_to_log(self, fname = None) -> None:
-        if fname == None:
-            fname = self._file_path + self._filename_only + "(h_graph)" + ".txt"
+    def output_hypergraph_to_log(self, fname=None) -> None:
+        if fname == None: fname = self._file_path + self._filename_only + "(h_graph)" + ".txt"
         data_to_write = ""
         data_to_write += self._filename_only + '\n'
         data_to_write += dict_fs_to_txt(self._current_hypergraph)
@@ -690,7 +691,7 @@ class Hypergraph_Reconstructor:
         ## TODO: turn this dict into a new graph object
 
     ## Tests whether the graph is connected, with BFS
-    def test_connectedness(self, output=[]) -> bool:
+    def test_connectedness(self, output=None) -> bool:
         '''
         Generates / appends a list of lists to the "output" variable.
         Each sublist is a connected subgraph.
@@ -707,6 +708,8 @@ class Hypergraph_Reconstructor:
         If total number of sublists is larger than 1, return False as the graph is not connected.
         Otherwise return True.
         '''
+        if output == None: output = list()
+
         traversed     = dict()
         num_subgraphs = 0
                 

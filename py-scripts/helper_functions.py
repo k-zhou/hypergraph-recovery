@@ -22,10 +22,9 @@ def factorial_div_factorial(top, bot):
 
 ### String methods
 # helper: removes the path to the file from the filename
-def strip_filename_path(fname, ch = None):
+def strip_filename_path(fname, ch=None):
     ch    = ch
-    if ch == None:
-        ch = '/'
+    if ch == None: ch = '/'
     last_ = 0
     for i in range(0, len(fname)):
         j = len(fname) -1 -i
@@ -37,10 +36,9 @@ def strip_filename_path(fname, ch = None):
     return stripped
 
 # helper: removes the file type suffix from the pathless filename
-def strip_filename_suffix(fname, ch = None):
+def strip_filename_suffix(fname, ch=None):
     ch    = ch
-    if ch == None:
-        ch = '.'
+    if ch == None: ch = '.'
     last_ = len(fname) -1
     for i in range(0, len(fname)):
         j = len(fname) -1 -i
@@ -51,10 +49,9 @@ def strip_filename_suffix(fname, ch = None):
     stripped = fname[0:last_]
     return stripped
 # helper: only keeps the suffix including the dot
-def get_filename_suffix(fname, ch = None):
+def get_filename_suffix(fname, ch=None):
     ch    = ch
-    if ch == None:
-        ch = '.'
+    if ch == None: ch = '.'
     last_ = len(fname) -1
     for i in range(0, len(fname)):
         j = len(fname) -1 -i
@@ -122,7 +119,8 @@ def dict_fs_to_txt(dict_to_save) -> str:
     return out_str
 
 # opens a file and reads the hypergraph data to object variable
-def read_hypergraph_from_file(filename="filename", dict_var=dict()) -> bool:
+def read_hypergraph_from_file(filename="filename", dict_var=None) -> bool:
+    if dict_var == None: dict_var = dict()
     with open(filename, mode='rt', encoding="utf-8") as fr:
         line = fr.readline()
         # parse line and convert back to hyperedge

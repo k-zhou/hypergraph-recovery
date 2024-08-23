@@ -27,22 +27,19 @@ class Object_Interface:
         return self._output_location
     
     def change_dataset_location(self, new=None) -> None:
-        if new == None:
-            new = input("Enter the new path to the datasets folder:\n")
+        if new == None: new = input("Enter the new path to the datasets folder:\n")
         self._dataset_location = new
 
     def change_output_location(self, new=None) -> None:
-        if new == None:
-            new = input("Enter the new path to the outputs folder:\n")
+        if new == None: new = input("Enter the new path to the outputs folder:\n")
         self._output_location = new
 
     def get_container_len(self) -> int:
         return len(self._container)
 
-    def load_file(self, filename = None) -> None:
-        if filename == None:
-            filename = input(f"Enter the file / path to file. Current location is\n" + \
-                             f"{self._dataset_location}")
+    def load_file(self, filename=None) -> None:
+        if filename == None: filename = input(f"Enter the file / path to file. Current location is\n" + \
+                                              f"{self._dataset_location}")
         self._container.append( Hypergraph_Reconstructor( self._dataset_location + filename) )
 
     # loads all .gt files in the DATASET LOCATION folder to self._container
@@ -59,7 +56,7 @@ class Object_Interface:
             counter += 1
         print(f"{len(file_list)} files appended to self._container[{len_before}+{len(file_list)}]")
 
-    def set_current(self,  target = None ) -> bool:
+    def set_current(self,  target=None ) -> bool:
         if not target == None and 0 <= target and target < len(self._container):
             self._current = target
             print(f"---- ---- ---- ----\nSELECTED [{self._current}] : {self._container[self._current]._filename_only}")
@@ -69,7 +66,7 @@ class Object_Interface:
             return False
 
     # runs for a set amount of iterations default 100
-    def run_algorithm(self, max_iterations = None, autostop = None, min_iterations = None) -> None:
+    def run_algorithm(self, max_iterations=None, autostop=None, min_iterations=None) -> None:
         if min_iterations == "again":
             n = 2*self._container[self._current]._iteration +1
             print(f"Running again for a minimum of {n} iterations.")
@@ -86,7 +83,7 @@ class Object_Interface:
             print("No files loaded.")
 
     #
-    def run_until_autostopped(self, min_iterations = None ) -> None:
+    def run_until_autostopped(self, min_iterations=None ) -> None:
         r1 = self._container[self._current]
         while not r1._auto_stopped:
             self.run_algorithm(10000, True, min_iterations)
